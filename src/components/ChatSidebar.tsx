@@ -289,8 +289,8 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
                                         {/* Tags */}
                                         {contact.tags && contact.tags.length > 0 && (
-                                            <div className="flex items-center gap-1 mt-1 flex-wrap">
-                                                {contact.tags.slice(0, 3).map(tagId => {
+                                            <div className="flex gap-1 mt-1 flex-wrap">
+                                                {contact.tags.map(tagId => {
                                                     const tag = getTagById(tagId);
                                                     if (!tag) return null;
                                                     return (
@@ -307,9 +307,6 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                                         </span>
                                                     );
                                                 })}
-                                                {contact.tags.length > 3 && (
-                                                    <span className="text-[8px] text-zinc-500">+{contact.tags.length - 3}</span>
-                                                )}
                                             </div>
                                         )}
                                     </div>

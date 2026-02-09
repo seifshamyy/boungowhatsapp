@@ -19,10 +19,14 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
     const [tagName, setTagName] = useState('');
     const [tagHex, setTagHex] = useState(TAG_COLORS[0].hex);
     const [loading, setLoading] = useState(false);
+    const [localContactTags, setLocalContactTags] = useState<number[]>(contactTags);
 
     useEffect(() => {
-        if (isOpen) fetchTags();
-    }, [isOpen]);
+        if (isOpen) {
+            fetchTags();
+            setLocalContactTags(contactTags);
+        }
+    }, [isOpen, contactTags]);
 
     const fetchTags = async () => {
         const { data } = await supabase.from('tags').select('*').order('id');
@@ -65,10 +69,11 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
     const toggleTagOnContact = async (tagId: number) => {
         if (!contactId) return;
         setLoading(true);
-        const currentTags = contactTags || [];
-        const newTags = currentTags.includes(tagId)
-            ? currentTags.filter(t => t !== tagId)
-            : [...currentTags, tagId];
+        const newTags = localContactTags.includes(tagId)
+            ? localContactTags.filter(t => t !== tagId)
+            : [...localContactTags, tagId];
+
+        setLocalContactTags(newTags);
 
         await supabase
             .from('contacts.ebp')
@@ -155,28 +160,41 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
                             ) : (
                                 // Display mode
                                 <>
-                                    {contactId && (
+                                    {contactId ? (
+                                        // Contact mode: just checkbox + tag info, clickable row
                                         <button
                                             onClick={() => toggleTagOnContact(tag.id)}
-                                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${contactTags.includes(tag.id)
+                                            disabled={loading}
+                                            className="flex items-center gap-2 flex-1 text-left"
+                                        >
+                                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${localContactTags.includes(tag.id)
                                                 ? 'border-[#25D366] bg-[#25D366]'
                                                 : 'border-zinc-600'
-                                                }`}
-                                        >
-                                            {contactTags.includes(tag.id) && <Check size={12} className="text-black" />}
+                                                }`}>
+                                                {localContactTags.includes(tag.id) && <Check size={12} className="text-black" />}
+                                            </div>
+                                            <div
+                                                className="w-3 h-3 rounded-full flex-shrink-0"
+                                                style={{ backgroundColor: tag['tag hex'] || '#666' }}
+                                            />
+                                            <span className="flex-1 text-white text-xs">{tag['tag name'] || 'Unnamed'}</span>
                                         </button>
+                                    ) : (
+                                        // Manager mode: tag info + edit/delete
+                                        <>
+                                            <div
+                                                className="w-3 h-3 rounded-full flex-shrink-0"
+                                                style={{ backgroundColor: tag['tag hex'] || '#666' }}
+                                            />
+                                            <span className="flex-1 text-white text-xs">{tag['tag name'] || 'Unnamed'}</span>
+                                            <button onClick={() => startEdit(tag)} className="p-1 hover:bg-white/10 rounded text-zinc-500">
+                                                <Edit2 size={13} />
+                                            </button>
+                                            <button onClick={() => deleteTag(tag.id)} className="p-1 hover:bg-red-500/20 rounded text-zinc-500 hover:text-red-400">
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </>
                                     )}
-                                    <div
-                                        className="w-3 h-3 rounded-full flex-shrink-0"
-                                        style={{ backgroundColor: tag['tag hex'] || '#666' }}
-                                    />
-                                    <span className="flex-1 text-white text-xs">{tag['tag name'] || 'Unnamed'}</span>
-                                    <button onClick={() => startEdit(tag)} className="p-1 hover:bg-white/10 rounded text-zinc-500">
-                                        <Edit2 size={13} />
-                                    </button>
-                                    <button onClick={() => deleteTag(tag.id)} className="p-1 hover:bg-red-500/20 rounded text-zinc-500 hover:text-red-400">
-                                        <Trash2 size={13} />
-                                    </button>
                                 </>
                             )}
                         </div>
