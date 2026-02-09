@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatSidebar } from './components/ChatSidebar';
 import { ChatHeader } from './components/ChatHeader';
 import { NeuralFeed } from './components/NeuralFeed';
 import { OutboundHub } from './components/OutboundHub';
 import { useMessages } from './hooks/useMessages';
 import { WhatsAppMessage } from './types';
+import { initPushNotifications } from './lib/pushNotifications';
 
 function App() {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
     const [showMobileChat, setShowMobileChat] = useState(false);
     const { addLocalMessage, refetch } = useMessages();
+
+    useEffect(() => {
+        initPushNotifications();
+    }, []);
 
     const handleSelectChat = (contactId: string) => {
         setSelectedChat(contactId);
