@@ -231,12 +231,18 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
 
                 {/* Footer */}
                 {!creating && editingId === null && (
-                    <div className="p-3 border-t border-zinc-800">
+                    <div className="p-3 border-t border-zinc-800 flex gap-2">
                         <button
                             onClick={startCreate}
-                            className="w-full py-2 bg-white/5 hover:bg-white/10 border border-zinc-700 rounded-lg text-xs text-zinc-300 flex items-center justify-center gap-1.5 transition-colors"
+                            className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-zinc-700 rounded-lg text-xs text-zinc-300 flex items-center justify-center gap-1.5 transition-colors"
                         >
                             <Plus size={14} /> New Tag
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="flex-1 py-2 bg-[#25D366] hover:bg-[#1ebc57] rounded-lg text-xs text-black font-medium flex items-center justify-center gap-1.5 transition-colors"
+                        >
+                            <Check size={14} /> Done
                         </button>
                     </div>
                 )}
