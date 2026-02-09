@@ -400,7 +400,7 @@ export const OutboundHub = ({ recipientId, onMessageSent }: OutboundHubProps) =>
     if (!recipientId) return null;
 
     return (
-        <div className="border-t border-[#25D366]/20 bg-[#0a0a0a] p-3 relative">
+        <div className="border-t border-[#25D366]/20 bg-[#0a0a0a] p-2 sm:p-3 relative flex-shrink-0">
             <input
                 ref={fileInputRef}
                 type="file"
@@ -410,78 +410,78 @@ export const OutboundHub = ({ recipientId, onMessageSent }: OutboundHubProps) =>
             />
 
             {error && (
-                <div className="absolute bottom-full left-4 right-4 mb-2 bg-red-900/95 border border-red-500/50 text-red-200 text-xs px-4 py-2 rounded-lg z-50">
+                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-red-900/95 border border-red-500/50 text-red-200 text-[11px] sm:text-xs px-3 py-1.5 rounded-lg z-50">
                     ⚠️ {error}
                 </div>
             )}
 
             {/* Recording UI */}
             {isRecording && (
-                <div className="mb-3 p-3 bg-red-900/20 border border-red-500/30 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-red-400 font-mono text-sm">Recording: {formatTime(recordingTime)}</span>
+                <div className="mb-2 p-2 sm:p-3 bg-red-900/20 border border-red-500/30 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                        <span className="text-red-400 font-mono text-xs sm:text-sm">{formatTime(recordingTime)}</span>
                     </div>
                     <button
                         onClick={stopRecording}
-                        className="px-4 py-1.5 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition-colors"
+                        className="px-3 py-1 sm:px-4 sm:py-1.5 bg-red-600 text-white rounded-full text-xs sm:text-sm font-medium"
                     >
-                        Stop & Send
+                        Send
                     </button>
                 </div>
             )}
 
             {/* Sending indicator */}
             {sending && (
-                <div className="mb-3 p-3 bg-[#25D366]/10 border border-[#25D366]/30 rounded-lg flex items-center gap-3">
-                    <Loader2 size={18} className="text-[#25D366] animate-spin" />
-                    <span className="text-[#25D366] text-sm">Sending...</span>
+                <div className="mb-2 p-2 bg-[#25D366]/10 border border-[#25D366]/30 rounded-lg flex items-center gap-2">
+                    <Loader2 size={14} className="text-[#25D366] animate-spin" />
+                    <span className="text-[#25D366] text-xs">Sending...</span>
                 </div>
             )}
 
             {/* File Preview */}
             {selectedFile && !isRecording && !sending && (
-                <div className="mb-3 p-2 bg-[#1a1a1a] rounded-lg border border-zinc-800 flex items-center gap-3">
+                <div className="mb-2 p-1.5 sm:p-2 bg-[#1a1a1a] rounded-lg border border-zinc-800 flex items-center gap-2">
                     {filePreview ? (
-                        <img src={filePreview} alt="Preview" className="w-16 h-16 object-cover rounded" />
+                        <img src={filePreview} alt="Preview" className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded" />
                     ) : (
-                        <div className="w-16 h-16 bg-[#25D366]/10 rounded flex items-center justify-center">
-                            <Mic size={24} className="text-[#25D366]" />
+                        <div className="w-12 h-12 bg-[#25D366]/10 rounded flex items-center justify-center">
+                            <Mic size={20} className="text-[#25D366]" />
                         </div>
                     )}
                     <div className="flex-1 min-w-0">
-                        <p className="text-white text-sm truncate">{selectedFile.name}</p>
-                        <p className="text-zinc-500 text-xs">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                        <p className="text-white text-xs sm:text-sm truncate">{selectedFile.name}</p>
+                        <p className="text-zinc-500 text-[10px] sm:text-xs">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                     </div>
-                    <button onClick={clearFile} className="p-2 hover:bg-white/5 rounded-full text-zinc-400">
-                        <X size={18} />
+                    <button onClick={clearFile} className="p-1.5 hover:bg-white/5 rounded-full text-zinc-400">
+                        <X size={16} />
                     </button>
                 </div>
             )}
 
             {!isRecording && (
-                <div className="flex items-end gap-2">
-                    <button className="p-2.5 rounded-full text-zinc-400 hover:text-[#25D366] hover:bg-white/5 transition-colors">
-                        <Smile size={22} />
+                <div className="flex items-end gap-1 sm:gap-2">
+                    <button className="p-2 rounded-full text-zinc-400 hover:text-[#25D366] hover:bg-white/5 transition-colors hidden sm:block">
+                        <Smile size={20} />
                     </button>
 
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2.5 rounded-full text-zinc-400 hover:text-[#25D366] hover:bg-white/5 transition-colors"
+                        className="p-2 rounded-full text-zinc-400 hover:text-[#25D366] hover:bg-white/5 transition-colors"
                     >
-                        <Paperclip size={22} />
+                        <Paperclip size={18} />
                     </button>
 
-                    <div className="flex-1 bg-[#1a1a1a] rounded-2xl border border-zinc-800 focus-within:border-[#25D366]/50 transition-colors">
+                    <div className="flex-1 bg-[#1a1a1a] rounded-2xl border border-zinc-800 focus-within:border-[#25D366]/50">
                         <textarea
                             ref={textareaRef}
                             value={input}
                             onChange={(e) => { setInput(e.target.value); autoResize(); }}
                             onKeyDown={handleKeyDown}
-                            placeholder={selectedFile ? 'Add a caption...' : `Message +${recipientId}`}
-                            className="w-full bg-transparent text-white px-4 py-3 text-sm resize-none focus:outline-none placeholder:text-zinc-500"
+                            placeholder="Message..."
+                            className="w-full bg-transparent text-white px-3 py-2.5 text-[13px] sm:text-sm resize-none focus:outline-none placeholder:text-zinc-500"
                             rows={1}
-                            style={{ minHeight: '44px', maxHeight: '120px' }}
+                            style={{ minHeight: '40px', maxHeight: '100px' }}
                         />
                     </div>
 
@@ -489,17 +489,17 @@ export const OutboundHub = ({ recipientId, onMessageSent }: OutboundHubProps) =>
                         <button
                             onClick={handleSend}
                             disabled={sending}
-                            className="p-2.5 rounded-full bg-[#25D366] text-black hover:bg-[#1ebc57] transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(37,211,102,0.3)]"
+                            className="p-2 rounded-full bg-[#25D366] text-black hover:bg-[#1ebc57] transition-all disabled:opacity-50"
                         >
-                            {sending ? <Loader2 size={22} className="animate-spin" /> : <Send size={22} />}
+                            {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                         </button>
                     ) : (
                         <button
                             onClick={startRecording}
                             disabled={sending}
-                            className="p-2.5 rounded-full text-zinc-400 hover:text-[#25D366] hover:bg-white/5 transition-colors disabled:opacity-50"
+                            className="p-2 rounded-full text-zinc-400 hover:text-[#25D366] hover:bg-white/5 transition-colors disabled:opacity-50"
                         >
-                            <Mic size={22} />
+                            <Mic size={18} />
                         </button>
                     )}
                 </div>
