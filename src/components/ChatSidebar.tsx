@@ -198,7 +198,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         <>
             <div className="w-full h-full bg-[#111111] border-r border-[#25D366]/20 flex flex-col">
                 {/* Header */}
-                <div className="h-12 sm:h-14 px-3 sm:px-4 flex items-center justify-between border-b border-[#25D366]/20 bg-[#0a0a0a] flex-shrink-0">
+                <div className="px-3 sm:px-4 flex items-center justify-between border-b border-[#25D366]/20 bg-[#0a0a0a] flex-shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))', paddingBottom: '0.5rem' }}>
                     <div className="flex items-center gap-2">
                         <img
                             src="https://whmbrguzumyatnslzfsq.supabase.co/storage/v1/object/public/Client%20Logos/d44435d6-4dfb-4616-8e0f-6cd45a88403d.jpeg"

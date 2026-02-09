@@ -54,7 +54,7 @@ export const ChatHeader = ({ contactId, onBack, showBackButton }: ChatHeaderProp
     return (
         <div
             className="px-2 flex items-center justify-between border-b border-[#25D366]/20 bg-[#0a0a0a] flex-shrink-0"
-            style={{ height: '52px', minHeight: '52px' }}
+            style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))', paddingBottom: '0.5rem', minHeight: '52px' }}
         >
             <div className="flex items-center gap-2 min-w-0 flex-1">
                 {showBackButton && (
