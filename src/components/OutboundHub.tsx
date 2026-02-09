@@ -400,7 +400,7 @@ export const OutboundHub = ({ recipientId, onMessageSent }: OutboundHubProps) =>
     if (!recipientId) return null;
 
     return (
-        <div className="border-t border-[#25D366]/20 bg-[#0a0a0a] p-2 sm:p-3 relative flex-shrink-0" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+        <div className="border-t border-[#25D366]/20 bg-[#0a0a0a] px-2 pt-1.5 relative flex-shrink-0" style={{ paddingBottom: 'calc(6px + env(safe-area-inset-bottom, 0px))' }}>
             <input
                 ref={fileInputRef}
                 type="file"
