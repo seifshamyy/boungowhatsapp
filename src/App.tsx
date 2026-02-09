@@ -5,7 +5,7 @@ import { NeuralFeed } from './components/NeuralFeed';
 import { OutboundHub } from './components/OutboundHub';
 import { useMessages } from './hooks/useMessages';
 import { WhatsAppMessage } from './types';
-import { initPushNotifications } from './lib/pushNotifications';
+import { registerServiceWorker } from './lib/pushNotifications';
 
 function App() {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
@@ -13,7 +13,8 @@ function App() {
     const { addLocalMessage, refetch } = useMessages();
 
     useEffect(() => {
-        initPushNotifications();
+        // Just register the SW on load — permission is requested via user gesture
+        registerServiceWorker();
     }, []);
 
     const handleSelectChat = (contactId: string) => {

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, User, Tag as TagIcon } from 'lucide-react';
+import { Search, Plus, User, Tag as TagIcon, Bell, BellRing } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { WhatsAppMessage, ContactEbp, Tag, getContactId } from '../types';
 import { TagManager } from './TagManager';
+import { subscribeToPush, isPushSupported } from '../lib/pushNotifications';
 
 interface SidebarContact {
     id: string;
@@ -57,6 +58,9 @@ const getAvatarColor = (contactId: string) => {
 export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) => {
     const [contacts, setContacts] = useState<SidebarContact[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [notifEnabled, setNotifEnabled] = useState(() =>
+        typeof Notification !== 'undefined' && Notification.permission === 'granted'
+    );
     const [loading, setLoading] = useState(true);
     const [readMessages, setReadMessages] = useState<Set<number>>(() => loadReadMessages());
     const [contactsMap, setContactsMap] = useState<Map<string, ContactEbp>>(new Map());
@@ -208,6 +212,19 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                         <span className="font-semibold text-white text-sm">Portal <span className="text-zinc-500 font-normal text-[10px] sm:text-[11px]">by Flowmaticlabs</span></span>
                     </div>
                     <div className="flex items-center gap-1">
+                        {isPushSupported() && (
+                            <button
+                                onClick={async () => {
+                                    const success = await subscribeToPush();
+                                    if (success) setNotifEnabled(true);
+                                }}
+                                className={`p-1.5 rounded-full hover:bg-white/5 transition-colors ${notifEnabled ? 'text-[#25D366]' : 'text-zinc-400 hover:text-[#25D366] animate-pulse'
+                                    }`}
+                                title={notifEnabled ? 'Notifications enabled' : 'Enable notifications'}
+                            >
+                                {notifEnabled ? <BellRing size={16} /> : <Bell size={16} />}
+                            </button>
+                        )}
                         <button onClick={openTagManagerGlobal} className="p-1.5 rounded-full hover:bg-white/5 text-zinc-400 hover:text-[#25D366] transition-colors" title="Manage Tags">
                             <TagIcon size={16} />
                         </button>

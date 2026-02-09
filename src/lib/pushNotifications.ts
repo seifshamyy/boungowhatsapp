@@ -1,38 +1,72 @@
 // Push notification subscription helper
 
-export async function initPushNotifications(): Promise<void> {
-    // Check support
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        console.log('[Push] Not supported in this browser');
-        return;
+// Check if push is supported
+export function isPushSupported(): boolean {
+    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+
+// Check current permission status
+export function getPushPermission(): NotificationPermission | 'unsupported' {
+    if (!isPushSupported()) return 'unsupported';
+    return Notification.permission;
+}
+
+// Register service worker early (can happen on load)
+export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+    if (!isPushSupported()) return null;
+    try {
+        const registration = await navigator.serviceWorker.register('/sw-push.js');
+        console.log('[Push] Service worker registered');
+        return registration;
+    } catch (err) {
+        console.error('[Push] SW registration failed:', err);
+        return null;
+    }
+}
+
+// Request permission + subscribe (MUST be called from user gesture on iOS)
+export async function subscribeToPush(): Promise<boolean> {
+    if (!isPushSupported()) {
+        console.log('[Push] Not supported');
+        return false;
     }
 
     try {
-        // Register service worker
-        const registration = await navigator.serviceWorker.register('/sw-push.js');
-        console.log('[Push] Service worker registered');
-
-        // Request permission
+        // Request permission (this is the part that needs user gesture on iOS)
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
             console.log('[Push] Permission denied');
-            return;
+            return false;
         }
+
+        // Get or register service worker
+        let registration = await navigator.serviceWorker.getRegistration('/sw-push.js');
+        if (!registration) {
+            registration = await navigator.serviceWorker.register('/sw-push.js');
+        }
+
+        // Wait for service worker to be ready
+        await navigator.serviceWorker.ready;
 
         // Get VAPID public key from server
         const response = await fetch('/api/push/vapid-key');
         const { publicKey } = await response.json();
 
         if (!publicKey) {
-            console.warn('[Push] No VAPID public key from server');
-            return;
+            console.warn('[Push] No VAPID key from server');
+            return false;
         }
 
-        // Subscribe
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
-        });
+        // Check if already subscribed
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+            // Subscribe
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+            });
+        }
 
         // Send subscription to server
         await fetch('/api/push/subscribe', {
@@ -42,8 +76,10 @@ export async function initPushNotifications(): Promise<void> {
         });
 
         console.log('[Push] Subscribed successfully');
+        return true;
     } catch (err) {
-        console.error('[Push] Setup error:', err);
+        console.error('[Push] Subscribe error:', err);
+        return false;
     }
 }
 
