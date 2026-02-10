@@ -25,13 +25,13 @@ export const AudioPlayer = ({ url }: AudioPlayerProps) => {
 
         wavesurfer.current = WaveSurfer.create({
             container: containerRef.current,
-            waveColor: 'rgba(37, 211, 102, 0.5)',
-            progressColor: '#25D366',
+            waveColor: '#cbd5e1', // Light slate
+            progressColor: '#ef4444', // Red accent
             cursorColor: 'transparent',
-            barWidth: 3,
-            barRadius: 3,
-            barGap: 2,
-            height: 36,
+            barWidth: 2,
+            barRadius: 4,
+            barGap: 3,
+            height: 32,
             normalize: true,
         });
 
@@ -62,19 +62,19 @@ export const AudioPlayer = ({ url }: AudioPlayerProps) => {
     };
 
     return (
-        <div className="flex items-center gap-3 bg-black/40 rounded-xl p-2.5 border border-[#25D366]/20">
+        <div className="flex items-center gap-3 bg-slate-50 rounded-2xl p-2 sm:p-2.5 border border-slate-100 shadow-sm">
             <button
                 onClick={togglePlay}
                 disabled={!isReady}
-                className="w-10 h-10 rounded-full bg-[#25D366] text-black flex items-center justify-center hover:bg-[#1ebc57] transition-all disabled:opacity-50 flex-shrink-0 shadow-[0_0_15px_rgba(37,211,102,0.3)]"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all disabled:opacity-50 flex-shrink-0 shadow-sm"
             >
-                {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
+                {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} className="ml-0.5" fill="currentColor" />}
             </button>
             <div className="flex-1 min-w-0">
                 <div ref={containerRef} className="w-full" />
                 <div className="flex justify-between mt-1 px-1">
-                    <span className="text-[10px] text-zinc-400">{isPlaying ? currentTime : '0:00'}</span>
-                    <span className="text-[10px] text-zinc-400">{duration}</span>
+                    <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium">{isPlaying ? currentTime : '0:00'}</span>
+                    <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium">{duration}</span>
                 </div>
             </div>
         </div>
