@@ -103,3 +103,39 @@ a {
     min-height: 36px;
     min-width: 36px;
 }
+
+/* Modal pop-up animations */
+@keyframes modal-overlay-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modal-pop-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.02) translateY(-2px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-overlay {
+    animation: modal-overlay-in 0.2s ease-out;
+}
+
+.modal-panel {
+    animation: modal-pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

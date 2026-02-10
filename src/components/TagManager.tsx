@@ -102,8 +102,8 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4" onClick={onClose}>
-            <div className="w-full sm:w-[400px] max-h-[80vh] bg-white rounded-2xl sm:rounded-3xl border border-slate-200 flex flex-col shadow-2xl transition-all animate-in fade-in slide-in-from-bottom-4" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 modal-overlay" onClick={onClose}>
+            <div className="w-full sm:w-[400px] max-h-[80vh] bg-white rounded-2xl sm:rounded-3xl border border-slate-200 flex flex-col shadow-2xl modal-panel" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
                     <h3 className="text-slate-900 font-bold text-lg">
