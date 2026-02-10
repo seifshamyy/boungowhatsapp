@@ -212,19 +212,21 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                         <span className="font-semibold text-white text-sm">Portal <span className="text-zinc-500 font-normal text-[10px] sm:text-[11px]">by Flowmaticlabs</span></span>
                     </div>
                     <div className="flex items-center gap-1">
-                        {isPushSupported() && (
-                            <button
-                                onClick={async () => {
-                                    const success = await subscribeToPush();
-                                    if (success) setNotifEnabled(true);
-                                }}
-                                className={`p-1.5 rounded-full hover:bg-white/5 transition-colors ${notifEnabled ? 'text-[#25D366]' : 'text-zinc-400 hover:text-[#25D366] animate-pulse'
-                                    }`}
-                                title={notifEnabled ? 'Notifications enabled' : 'Enable notifications'}
-                            >
-                                {notifEnabled ? <BellRing size={16} /> : <Bell size={16} />}
-                            </button>
-                        )}
+                        <button
+                            onClick={async () => {
+                                if (!isPushSupported()) {
+                                    alert('Push notifications require adding this app to your home screen first.');
+                                    return;
+                                }
+                                const success = await subscribeToPush();
+                                if (success) setNotifEnabled(true);
+                            }}
+                            className={`p-1.5 rounded-full hover:bg-white/5 transition-colors ${notifEnabled ? 'text-[#25D366]' : 'text-zinc-400 hover:text-[#25D366] animate-pulse'
+                                }`}
+                            title={notifEnabled ? 'Notifications enabled' : 'Enable notifications'}
+                        >
+                            {notifEnabled ? <BellRing size={16} /> : <Bell size={16} />}
+                        </button>
                         <button onClick={openTagManagerGlobal} className="p-1.5 rounded-full hover:bg-white/5 text-zinc-400 hover:text-[#25D366] transition-colors" title="Manage Tags">
                             <TagIcon size={16} />
                         </button>
