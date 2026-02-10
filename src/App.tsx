@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatSidebar } from './components/ChatSidebar';
 import { ChatHeader } from './components/ChatHeader';
 import { NeuralFeed } from './components/NeuralFeed';
@@ -11,9 +11,9 @@ function App() {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
     const [showMobileChat, setShowMobileChat] = useState(false);
     const { addLocalMessage, refetch } = useMessages();
+    const rootRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Just register the SW on load — permission is requested via user gesture
         registerServiceWorker();
     }, []);
 
@@ -22,18 +22,65 @@ function App() {
         setShowMobileChat(true);
     };
 
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         setShowMobileChat(false);
         setSelectedChat(null);
-    };
+    }, []);
 
     const handleMessageSent = (message: Partial<WhatsAppMessage>) => {
         addLocalMessage(message);
         setTimeout(() => refetch(), 500);
     };
 
+    // Edge swipe-right to go back (mobile only)
+    useEffect(() => {
+        const EDGE_ZONE = 30;      // px from left edge to start swipe
+        const MIN_SWIPE = 80;      // min horizontal distance to trigger
+        let startX = 0;
+        let startY = 0;
+        let isEdgeSwipe = false;
+
+        const onTouchStart = (e: TouchEvent) => {
+            const touch = e.touches[0];
+            // Only activate when chat is showing and touch starts in edge zone
+            if (touch.clientX <= EDGE_ZONE) {
+                startX = touch.clientX;
+                startY = touch.clientY;
+                isEdgeSwipe = true;
+            } else {
+                isEdgeSwipe = false;
+            }
+        };
+
+        const onTouchEnd = (e: TouchEvent) => {
+            if (!isEdgeSwipe) return;
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = Math.abs(touch.clientY - startY);
+
+            // Must swipe right, far enough, and more horizontal than vertical
+            if (deltaX > MIN_SWIPE && deltaX > deltaY * 1.5) {
+                handleBack();
+            }
+            isEdgeSwipe = false;
+        };
+
+        const el = rootRef.current;
+        if (el) {
+            el.addEventListener('touchstart', onTouchStart, { passive: true });
+            el.addEventListener('touchend', onTouchEnd, { passive: true });
+        }
+
+        return () => {
+            if (el) {
+                el.removeEventListener('touchstart', onTouchStart);
+                el.removeEventListener('touchend', onTouchEnd);
+            }
+        };
+    }, [handleBack]);
+
     return (
-        <div className="w-full h-full overflow-hidden bg-white">
+        <div ref={rootRef} className="w-full h-full overflow-hidden bg-white">
             {/* 
               Mobile: Sliding container (200vw width)
               Desktop: Normal Flex container (100% width)
