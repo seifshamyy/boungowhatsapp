@@ -127,7 +127,7 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
                                         placeholder="Tag name"
                                         autoFocus
                                     />
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2">
                                         {TAG_COLORS.map(c => (
                                             <button
                                                 key={c.hex}
@@ -217,7 +217,7 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
                                 placeholder="Enter tag name..."
                                 autoFocus
                             />
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 {TAG_COLORS.map(c => (
                                     <button
                                         key={c.hex}
