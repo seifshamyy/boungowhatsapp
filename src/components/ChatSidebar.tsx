@@ -177,6 +177,13 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
     const getTagById = (tagId: number) => allTags.find(t => t.id === tagId);
 
+    const openTagManagerForContact = (e: React.MouseEvent, contactId: string, contactTagIds: number[]) => {
+        e.stopPropagation();
+        setTagManagerContactId(contactId);
+        setTagManagerContactTags(contactTagIds);
+        setTagManagerOpen(true);
+    };
+
     const openTagManagerGlobal = () => {
         setTagManagerContactId(undefined);
         setTagManagerContactTags([]);
@@ -295,10 +302,10 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                                 {contact.lastMessage}
                                             </p>
                                         </div>
-                                        {/* Tags Display */}
-                                        {contact.tags && contact.tags.length > 0 && (
-                                            <div className="flex flex-wrap gap-1 mt-1.5">
-                                                {contact.tags.map(tagId => {
+                                        {/* Tags Display + Assign Button */}
+                                        <div className="flex items-center gap-1 mt-1.5">
+                                            <div className="flex flex-wrap gap-1 flex-1">
+                                                {contact.tags && contact.tags.length > 0 && contact.tags.map(tagId => {
                                                     const tag = getTagById(tagId);
                                                     if (!tag) return null;
                                                     return (
@@ -316,7 +323,14 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                                     );
                                                 })}
                                             </div>
-                                        )}
+                                            <button
+                                                onClick={(e) => openTagManagerForContact(e, contact.id, contact.tags || [])}
+                                                className="p-0.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
+                                                title="Assign tags"
+                                            >
+                                                <TagIcon size={12} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </button>
                             );
