@@ -13,8 +13,8 @@ app.use(express.json());
 // --- Config ---
 const PORT = process.env.PORT || 3000;
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || 'BMDotmpOCO_Z_htFzhqPnkyDLjLq_-WNKjNdjV_Go-Ozesf4Wq4SGiaUthaDIkWCsPKJP4GOqhDZezxsXm2fQpE';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'e-rlCV-oLhMlBvYIKz3aNohile3bJHklaXpDdaTLOfs';
 const VAPID_EMAIL = process.env.VAPID_EMAIL || 'mailto:admin@flowmaticlabs.com';
 
 const SUPABASE_URL = 'https://whmbrguzumyatnslzfsq.supabase.co';
