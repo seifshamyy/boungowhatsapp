@@ -76,13 +76,13 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
     // Fetch tags
     const fetchTags = useCallback(async () => {
-        const { data } = await supabase.from('tags.buongo').select('*');
+        const { data } = await supabase.from('tags.serenity').select('*');
         if (data) setAllTags(data as Tag[]);
     }, []);
 
     // Fetch contacts from contacts.ebp
     const fetchContactsEbp = useCallback(async () => {
-        const { data } = await supabase.from('contacts.buongo').select('*');
+        const { data } = await supabase.from('contacts.serenity').select('*');
         if (data) {
             const map = new Map<string, ContactEbp>();
             (data as ContactEbp[]).forEach(c => map.set(String(c.id), c));
@@ -93,8 +93,8 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
     const fetchContacts = useCallback(async () => {
         // Fetch both messages and contacts in parallel so names are always available
         const [msgsResult, ebpResult] = await Promise.all([
-            supabase.from('whatsappbuongo').select('*').order('created_at', { ascending: false }),
-            supabase.from('contacts.buongo').select('*'),
+            supabase.from('whatsappserenity').select('*').order('created_at', { ascending: false }),
+            supabase.from('contacts.serenity').select('*'),
         ]);
 
         if (msgsResult.data) {
@@ -145,7 +145,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         if (selectedChat) {
             const markAsRead = async () => {
                 const { data } = await supabase
-                    .from('whatsappbuongo')
+                    .from('whatsappserenity')
                     .select('id')
                     .eq('from', selectedChat);
 
@@ -181,7 +181,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             sidebarMsgChannel = supabase
                 .channel('sidebar-messages')
                 .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'whatsappbuongo' },
+                    { event: '*', schema: 'public', table: 'whatsappserenity' },
                     () => sidebarFetchContactsRef?.()
                 )
                 .subscribe((status) => {
@@ -194,7 +194,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             sidebarContactChannel = supabase
                 .channel('sidebar-contacts')
                 .on('postgres_changes',
-                    { event: '*', schema: 'public', table: 'contacts.buongo' },
+                    { event: '*', schema: 'public', table: 'contacts.serenity' },
                     () => { sidebarFetchEbpRef?.(); sidebarFetchContactsRef?.(); }
                 )
                 .subscribe((status) => {
@@ -288,12 +288,12 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                 <div className="px-3 sm:px-4 flex items-center justify-between border-b border-slate-200 bg-white flex-shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))', paddingBottom: '0.5rem' }}>
                     <div className="flex items-center gap-2">
                         <img
-                            src="https://whmbrguzumyatnslzfsq.supabase.co/storage/v1/object/public/TREE/buongo.jpg"
-                            alt="Buongo Logo"
+                            src="https://whmbrguzumyatnslzfsq.supabase.co/storage/v1/object/public/Client%20Logos/Serenity-Spa%20(1).png"
+                            alt="Serenity Logo"
                             className="w-8 h-8 rounded-full object-cover border border-slate-200"
                         />
                         <div className="flex flex-col">
-                            <span className="font-bold text-slate-900 text-sm leading-tight">Buongo</span>
+                            <span className="font-bold text-slate-900 text-sm leading-tight">Serenity</span>
                             <span className="text-slate-500 font-medium text-[10px]">Active Hub</span>
                         </div>
                     </div>
@@ -307,16 +307,16 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                 const success = await subscribeToPush();
                                 if (success) setNotifEnabled(true);
                             }}
-                            className={`p-1.5 rounded-full hover:bg-slate-100 transition-colors ${notifEnabled ? 'text-emerald-500' : 'text-slate-400 hover:text-emerald-500 animate-pulse'
+                            className={`p-1.5 rounded-full hover:bg-slate-100 transition-colors ${notifEnabled ? 'text-serenity-teal' : 'text-slate-400 hover:text-serenity-teal animate-pulse'
                                 }`}
                             title={notifEnabled ? 'Notifications enabled' : 'Enable notifications'}
                         >
                             {notifEnabled ? <BellRing size={16} /> : <Bell size={16} />}
                         </button>
-                        <button onClick={openTagManagerGlobal} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-emerald-500 transition-colors" title="Manage Tags">
+                        <button onClick={openTagManagerGlobal} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-serenity-teal transition-colors" title="Manage Tags">
                             <TagIcon size={16} />
                         </button>
-                        <button className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-emerald-500 transition-colors">
+                        <button className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-serenity-teal transition-colors">
                             <Plus size={18} />
                         </button>
                     </div>
@@ -375,7 +375,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                     key={contact.id}
                                     onClick={() => onSelectChat(contact.id)}
                                     className={`w-full p-2.5 sm:p-3 flex items-center gap-3 transition-all cursor-pointer border-l-2 ${selectedChat === contact.id
-                                        ? 'bg-emerald-50 border-emerald-500'
+                                        ? 'bg-serenity-light border-serenity-teal'
                                         : 'hover:bg-slate-50 border-transparent'
                                         }`}
                                 >
@@ -410,7 +410,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                             <span className="font-semibold text-slate-900 truncate text-sm sm:text-base text-left">
                                                 {contact.name || `+${contact.id}`}
                                             </span>
-                                            <span className={`text-[9px] sm:text-[10px] ml-1.5 flex-shrink-0 ${contact.unreadCount > 0 && selectedChat !== contact.id ? 'text-emerald-500 font-bold' : 'text-slate-400'}`}>
+                                            <span className={`text-[9px] sm:text-[10px] ml-1.5 flex-shrink-0 ${contact.unreadCount > 0 && selectedChat !== contact.id ? 'text-serenity-teal font-bold' : 'text-slate-400'}`}>
                                                 {formatTime(contact.lastMessageTime)}
                                             </span>
                                         </div>
@@ -442,7 +442,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                             </div>
                                             <button
                                                 onClick={(e) => openTagManagerForContact(e, contact.id, contact.tags || [])}
-                                                className="p-0.5 rounded hover:bg-emerald-50 text-slate-300 hover:text-emerald-500 transition-colors flex-shrink-0"
+                                                className="p-0.5 rounded hover:bg-serenity-light text-slate-300 hover:text-serenity-teal transition-colors flex-shrink-0"
                                                 title="Assign tags"
                                             >
                                                 <TagIcon size={12} />
@@ -457,7 +457,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
                 {/* Footer */}
                 <div className="hidden sm:flex h-8 px-4 items-center justify-center border-t border-slate-100 bg-slate-50 flex-shrink-0">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">BUONGO v1.1</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SERENITY v1.1</span>
                 </div>
             </div>
 

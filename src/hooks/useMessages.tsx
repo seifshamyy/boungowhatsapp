@@ -27,7 +27,7 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const fetchMessages = useCallback(async () => {
         try {
             const { data, error } = await supabase
-                .from('whatsappbuongo')
+                .from('whatsappserenity')
                 .select('*')
                 .order('created_at', { ascending: true });
 
@@ -82,7 +82,7 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 .channel('messages-realtime-v7')
                 .on(
                     'postgres_changes',
-                    { event: '*', schema: 'public', table: 'whatsappbuongo' },
+                    { event: '*', schema: 'public', table: 'whatsappserenity' },
                     (payload) => {
                         console.log('[Realtime] message event:', payload.eventType);
                         if (payload.eventType === 'INSERT') {
