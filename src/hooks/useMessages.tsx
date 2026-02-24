@@ -15,6 +15,7 @@ const MessagesContext = createContext<MessagesContextType | null>(null);
 
 // Module-level singleton channel
 let sharedChannel: RealtimeChannel | null = null;
+let fetchRef: (() => void) | null = null;
 
 export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
@@ -39,6 +40,9 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setLoading(false);
         }
     }, []);
+
+    const fetchMessagesRef = useRef(fetchMessages);
+    fetchMessagesRef.current = fetchMessages;
 
     const addOptimisticMessage = useCallback((message: Partial<WhatsAppMessage>) => {
         const newMsg: WhatsAppMessage = {
@@ -69,9 +73,13 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     useEffect(() => {
         fetchMessages();
 
+        // Keep module-level ref updated
+        fetchRef = () => fetchMessagesRef.current();
+
+        // Singleton Realtime channel
         if (!sharedChannel) {
             sharedChannel = supabase
-                .channel('messages-realtime-v6')
+                .channel('messages-realtime-v7')
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'whatsappbuongo' },
@@ -105,11 +113,40 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 )
                 .subscribe((status) => {
                     console.log('[Realtime] messages channel status:', status);
+                    // On reconnect, refetch to catch any messages missed while disconnected
+                    if (status === 'SUBSCRIBED') {
+                        fetchRef?.();
+                    }
                 });
         }
 
+        // RESILIENCE 1: Refetch when tab becomes visible again
+        // (WebSocket silently dies when browser tabs sleep)
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                console.log('[Realtime] Tab visible — refetching messages');
+                fetchMessagesRef.current();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        // RESILIENCE 2: Refetch when network comes back online
+        const onOnline = () => {
+            console.log('[Realtime] Network back online — refetching messages');
+            fetchMessagesRef.current();
+        };
+        window.addEventListener('online', onOnline);
+
+        // RESILIENCE 3: Safety-net poll every 30s
+        // (catches anything missed by Realtime — 97% less aggressive than the old 2s poll)
+        const safetyPoll = setInterval(() => {
+            fetchMessagesRef.current();
+        }, 30000);
+
         return () => {
-            // Don't remove the singleton channel — it persists for the app lifetime
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('online', onOnline);
+            clearInterval(safetyPoll);
         };
     }, [fetchMessages]);
 
@@ -122,8 +159,8 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     return (
-        <MessagesContext.Provider value= { value } >
-        { children }
+        <MessagesContext.Provider value={value}>
+            {children}
         </MessagesContext.Provider>
     );
 };

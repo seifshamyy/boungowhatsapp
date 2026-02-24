@@ -185,6 +185,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                 )
                 .subscribe((status) => {
                     console.log('[Realtime] sidebar-messages status:', status);
+                    if (status === 'SUBSCRIBED') sidebarFetchContactsRef?.();
                 });
         }
 
@@ -204,14 +205,27 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         sidebarFetchContactsRef = () => fetchContactsRef.current();
         sidebarFetchEbpRef = () => fetchContactsEbpRef.current();
 
-        // Light fallback poll for contacts (30s) — in case contacts.buongo realtime is blocked by RLS
-        const fallbackPoll = setInterval(() => {
-            fetchContactsEbpRef.current();
+        // RESILIENCE: Refetch when tab becomes visible (WebSocket may have died)
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchContactsRef.current();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        // RESILIENCE: Refetch when network comes back
+        const onOnline = () => fetchContactsRef.current();
+        window.addEventListener('online', onOnline);
+
+        // Safety-net poll every 30s for both messages and contacts
+        const safetyPoll = setInterval(() => {
+            fetchContactsRef.current();
         }, 30000);
 
         return () => {
-            clearInterval(fallbackPoll);
-            // Don't remove channels — they're singletons that persist across mounts
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('online', onOnline);
+            clearInterval(safetyPoll);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
