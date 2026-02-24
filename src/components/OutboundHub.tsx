@@ -25,7 +25,7 @@ const WHATSAPP_API_URL = 'https://graph.facebook.com/v24.0/927913190415819/messa
 const WHATSAPP_TOKEN = 'EAAWhwdJPMoABQqyclQ0MNsGyfDMvAQqYBRljnZC1PZATRhpa9ZC9Oq0FrhfcFw3w1QDK1VoRvnGOoIFXSGJuAro9bUQW984jdhxfOXZAhVk8IigBry2NPGQ1K5PgfEwE5rrsoqw4i2TshWZBN2Ih3d9Nrkwxp2XhmMyfHAPxduZAzh0DyfzzEi6ZC83dWdYZCvuUDgZDZD';
 
 // Webhook URL
-const WEBHOOK_URL = 'https://primary-production-9e01d.up.railway.app/webhook/6bcb8bb4-92eb-479c-9d3b-9ef3d3f56a0e';
+const WEBHOOK_URL = 'https://primary-production-e1a92.up.railway.app/webhook/d5672c0d-db68-4cbb-8bec-2de8e15515d2';
 
 // Supabase Storage
 const SUPABASE_STORAGE_URL = 'https://whmbrguzumyatnslzfsq.supabase.co/storage/v1/object/public/TREE';
@@ -149,7 +149,7 @@ const storeMessage = async (
 
     console.log('Storing message:', insertData);
 
-    const { data, error } = await supabase.from('whatsappserenity').insert(insertData).select();
+    const { data, error } = await supabase.from('whatsappbuongo').insert(insertData).select();
 
     if (error) {
         console.error('DB store failed:', error);
@@ -453,21 +453,21 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
             />
 
             {error && (
-                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-serenity-teal text-white text-[11px] sm:text-xs px-4 py-2 rounded-xl z-50 shadow-lg font-bold">
+                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-emerald-600 text-white text-[11px] sm:text-xs px-4 py-2 rounded-xl z-50 shadow-lg font-bold">
                     ⚠️ {error}
                 </div>
             )}
 
             {/* Recording UI */}
             {isRecording && (
-                <div className="mb-2 p-2 sm:p-3 bg-serenity-light border border-serenity-light rounded-2xl flex items-center justify-between shadow-sm">
+                <div className="mb-2 p-2 sm:p-3 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 bg-serenity-teal rounded-full animate-pulse" />
-                        <span className="text-serenity-teal font-bold text-xs sm:text-sm">{formatTime(recordingTime)}</span>
+                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-emerald-600 font-bold text-xs sm:text-sm">{formatTime(recordingTime)}</span>
                     </div>
                     <button
                         onClick={stopRecording}
-                        className="px-4 py-1.5 bg-serenity-teal text-white rounded-full text-xs sm:text-sm font-bold shadow-sm"
+                        className="px-4 py-1.5 bg-emerald-600 text-white rounded-full text-xs sm:text-sm font-bold shadow-sm"
                     >
                         Send Audio
                     </button>
@@ -476,9 +476,9 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
 
             {/* Sending indicator - Only for file/audio uploads */}
             {sending && (selectedFile || isRecording) && (
-                <div className="mb-2 p-2 bg-serenity-light border border-serenity-light rounded-xl flex items-center gap-2">
-                    <Loader2 size={14} className="text-serenity-teal animate-spin" />
-                    <span className="text-serenity-teal text-xs font-bold font-mono">UPLOADING...</span>
+                <div className="mb-2 p-2 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2">
+                    <Loader2 size={14} className="text-emerald-500 animate-spin" />
+                    <span className="text-emerald-600 text-xs font-bold font-mono">UPLOADING...</span>
                 </div>
             )}
 
@@ -488,15 +488,15 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
                     {filePreview ? (
                         <img src={filePreview} alt="Preview" className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-xl border border-white shadow-sm" />
                     ) : (
-                        <div className="w-12 h-12 bg-serenity-light rounded-xl flex items-center justify-center">
-                            <Mic size={20} className="text-serenity-teal" />
+                        <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+                            <Mic size={20} className="text-emerald-500" />
                         </div>
                     )}
                     <div className="flex-1 min-w-0">
                         <p className="text-slate-900 text-xs sm:text-sm font-bold truncate">{selectedFile.name}</p>
                         <p className="text-slate-500 text-[10px] sm:text-xs">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                     </div>
-                    <button onClick={clearFile} className="p-2 hover:bg-serenity-light rounded-full text-slate-400 hover:text-serenity-teal transition-colors">
+                    <button onClick={clearFile} className="p-2 hover:bg-emerald-50 rounded-full text-slate-400 hover:text-emerald-500 transition-colors">
                         <X size={18} />
                     </button>
                 </div>
@@ -507,12 +507,12 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
 
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2.5 rounded-full text-slate-400 hover:text-serenity-teal hover:bg-serenity-light transition-all"
+                        className="p-2.5 rounded-full text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all"
                     >
                         <Paperclip size={20} />
                     </button>
 
-                    <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-serenity-teal/30 focus-within:bg-white transition-all">
+                    <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-emerald-500/30 focus-within:bg-white transition-all">
                         <textarea
                             ref={textareaRef}
                             value={input}
@@ -529,7 +529,7 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
                         <button
                             onClick={handleSend}
                             disabled={sending && !!selectedFile} // Only disable if sending a FILE
-                            className="p-2.5 rounded-full bg-serenity-teal text-white hover:bg-serenity-teal transition-all shadow-md active:scale-95 disabled:opacity-50"
+                            className="p-2.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
                         >
                             {(sending && !!selectedFile) ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
                         </button>
@@ -537,7 +537,7 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
                         <button
                             onClick={startRecording}
                             disabled={sending}
-                            className="p-2.5 rounded-full text-slate-400 hover:text-serenity-teal hover:bg-serenity-light transition-all active:scale-95 disabled:opacity-50"
+                            className="p-2.5 rounded-full text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Mic size={20} />
                         </button>

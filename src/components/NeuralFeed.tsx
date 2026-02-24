@@ -38,10 +38,10 @@ export const NeuralFeed = ({ selectedChat }: NeuralFeedProps) => {
         return (
             <div className="flex-1 flex items-center justify-center bg-white">
                 <div className="text-center">
-                    <div className="w-24 h-24 rounded-full bg-serenity-light flex items-center justify-center mx-auto mb-6 border border-serenity-light shadow-sm">
-                        <MessageSquare size={40} className="text-serenity-teal" />
+                    <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-6 border border-emerald-100 shadow-sm">
+                        <MessageSquare size={40} className="text-emerald-500" />
                     </div>
-                    <h3 className="text-slate-900 text-2xl font-bold mb-2">Serenity</h3>
+                    <h3 className="text-slate-900 text-2xl font-bold mb-2">Buongo</h3>
                     <p className="text-slate-500 text-sm max-w-xs mx-auto">
                         Ready to assist. Select a conversation to manage your outreach.
                     </p>
@@ -54,9 +54,9 @@ export const NeuralFeed = ({ selectedChat }: NeuralFeedProps) => {
         return (
             <div className="flex-1 flex items-center justify-center bg-white">
                 <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 bg-serenity-teal rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2.5 h-2.5 bg-serenity-teal rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2.5 h-2.5 bg-serenity-teal rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
             </div>
         );

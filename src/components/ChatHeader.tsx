@@ -24,7 +24,7 @@ export const ChatHeader = ({ contactId, onBack, showBackButton, onChatDeleted }:
     const fetchContact = useCallback(async () => {
         if (!contactId) return;
         const { data } = await supabase
-            .from('contacts.serenity')
+            .from('contacts.buongo')
             .select('*')
             .eq('id', contactId)
             .single();
@@ -61,7 +61,7 @@ export const ChatHeader = ({ contactId, onBack, showBackButton, onChatDeleted }:
         setAiEnabled(newState);
 
         await supabase
-            .from('contacts.serenity')
+            .from('contacts.buongo')
             .update({ AI_replies: newState ? 'true' : 'false' })
             .eq('id', contactId);
 
@@ -74,7 +74,7 @@ export const ChatHeader = ({ contactId, onBack, showBackButton, onChatDeleted }:
 
         // Delete all messages where this contact is sender or receiver
         await supabase
-            .from('whatsappserenity')
+            .from('whatsappbuongo')
             .delete()
             .or(`from.eq.${contactId},to.eq.${contactId}`);
 
@@ -99,12 +99,12 @@ export const ChatHeader = ({ contactId, onBack, showBackButton, onChatDeleted }:
             >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                     {showBackButton && (
-                        <button onClick={onBack} className="p-2 -ml-1 rounded-full hover:bg-slate-100 text-serenity-teal active:bg-slate-200">
+                        <button onClick={onBack} className="p-2 -ml-1 rounded-full hover:bg-slate-100 text-emerald-500 active:bg-slate-200">
                             <ArrowLeft size={22} />
                         </button>
                     )}
 
-                    <button onClick={() => setInfoOpen(true)} className="w-9 h-9 rounded-full bg-gradient-to-br from-serenity-teal to-serenity-teal flex items-center justify-center flex-shrink-0 shadow-sm active:scale-95 transition-transform">
+                    <button onClick={() => setInfoOpen(true)} className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm active:scale-95 transition-transform">
                         <User size={18} className="text-white" />
                     </button>
 
@@ -120,7 +120,7 @@ export const ChatHeader = ({ contactId, onBack, showBackButton, onChatDeleted }:
                 <div className="flex items-center gap-2 flex-shrink-0">
                     {/* Toggle Switch + AI Label */}
                     <div className="flex items-center gap-1.5">
-                        <span className={`text-xs font-bold transition-colors duration-300 ${aiEnabled ? 'text-serenity-teal' : 'text-slate-400'}`}>AI</span>
+                        <span className={`text-xs font-bold transition-colors duration-300 ${aiEnabled ? 'text-emerald-500' : 'text-slate-400'}`}>AI</span>
 
                         <button
                             onClick={handleToggle}

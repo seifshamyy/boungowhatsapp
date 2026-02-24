@@ -25,7 +25,7 @@ export const ContactInfoPanel = ({ contactId, isOpen, onClose }: ContactInfoPane
 
         // Fetch contact
         const { data: contactData } = await supabase
-            .from('contacts.serenity')
+            .from('contacts.buongo')
             .select('*')
             .eq('id', contactId)
             .single();
@@ -37,12 +37,12 @@ export const ContactInfoPanel = ({ contactId, isOpen, onClose }: ContactInfoPane
         }
 
         // Fetch all tags
-        const { data: tagData } = await supabase.from('tags.serenity').select('*');
+        const { data: tagData } = await supabase.from('tags.buongo').select('*');
         if (tagData) setTags(tagData as Tag[]);
 
         // Fetch messages for stats
         const { data: msgData } = await supabase
-            .from('whatsappserenity')
+            .from('whatsappbuongo')
             .select('*')
             .or(`from.eq.${contactId},to.eq.${contactId}`)
             .order('created_at', { ascending: true });
@@ -80,7 +80,7 @@ export const ContactInfoPanel = ({ contactId, isOpen, onClose }: ContactInfoPane
         setAiEnabled(newState);
 
         await supabase
-            .from('contacts.serenity')
+            .from('contacts.buongo')
             .update({ AI_replies: newState ? 'true' : 'false' })
             .eq('id', contactId);
 
@@ -157,9 +157,9 @@ export const ContactInfoPanel = ({ contactId, isOpen, onClose }: ContactInfoPane
                             </div>
                             <p className="text-slate-900 font-bold text-lg">{messageCount}</p>
                         </div>
-                        <div className="p-3 bg-serenity-light rounded-2xl border border-serenity-light">
+                        <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="text-serenity-teal"><Calendar size={14} /></span>
+                                <span className="text-emerald-500"><Calendar size={14} /></span>
                                 <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Last Activity</span>
                             </div>
                             <p className="text-slate-900 font-bold text-sm truncate">+{contactId}</p>
@@ -188,7 +188,7 @@ export const ContactInfoPanel = ({ contactId, isOpen, onClose }: ContactInfoPane
                     {contactTags.length > 0 && (
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="text-serenity-teal"><MessageSquare size={14} /></span>
+                                <span className="text-emerald-500"><MessageSquare size={14} /></span>
                                 <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Messages</span>
                             </div>
                             <div className="flex flex-wrap gap-2">

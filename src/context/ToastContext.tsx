@@ -40,8 +40,8 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 20 }}
                             className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg border backdrop-blur-xl shadow-lg min-w-[300px] ${toast.type === 'error'
-                                ? 'bg-slate-900 border-serenity-teal/50 text-white'
-                                : 'bg-serenity-light border-serenity-teal/50 text-serenity-teal'
+                                ? 'bg-slate-900 border-emerald-500/50 text-white'
+                                : 'bg-emerald-50 border-emerald-500/50 text-emerald-600'
                                 }`}
                         >
                             {toast.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}

@@ -30,14 +30,14 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
     }, [isOpen, contactTags]);
 
     const fetchTags = async () => {
-        const { data } = await supabase.from('tags.serenity').select('*').order('id');
+        const { data } = await supabase.from('tags.buongo').select('*').order('id');
         if (data) setTags(data as Tag[]);
     };
 
     const createTag = async () => {
         if (!tagName.trim()) return;
         setLoading(true);
-        const { error } = await supabase.from('tags.serenity').insert({ 'tag name': tagName.trim(), 'tag hex': tagHex });
+        const { error } = await supabase.from('tags.buongo').insert({ 'tag name': tagName.trim(), 'tag hex': tagHex });
         if (error) console.error('Create tag error:', error);
         setTagName('');
         setTagHex(TAG_COLORS[0].hex);
@@ -50,7 +50,7 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
     const updateTag = async (id: number) => {
         if (!tagName.trim()) return;
         setLoading(true);
-        const { error } = await supabase.from('tags.serenity').update({ 'tag name': tagName.trim(), 'tag hex': tagHex }).eq('id', id);
+        const { error } = await supabase.from('tags.buongo').update({ 'tag name': tagName.trim(), 'tag hex': tagHex }).eq('id', id);
         if (error) console.error('Update tag error:', error);
         setEditingId(null);
         setTagName('');
@@ -61,7 +61,7 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
 
     const deleteTag = async (id: number) => {
         setLoading(true);
-        await supabase.from('tags.serenity').delete().eq('id', id);
+        await supabase.from('tags.buongo').delete().eq('id', id);
         await fetchTags();
         onTagsChanged();
         setLoading(false);
@@ -77,7 +77,7 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
         setLocalContactTags(newTags);
 
         await supabase
-            .from('contacts.serenity')
+            .from('contacts.buongo')
             .update({ tags: newTags })
             .eq('id', contactId);
 
@@ -124,7 +124,7 @@ export const TagManager = ({ isOpen, onClose, onTagsChanged, contactId, contactT
                                     <input
                                         value={tagName}
                                         onChange={e => setTagName(e.target.value)}
-                                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-serenity-teal/20 focus:border-serenity-teal/50"
+                                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50"
                                         placeholder="Tag name"
                                         autoFocus
                                     />
