@@ -9,7 +9,7 @@ import { registerServiceWorker } from './lib/pushNotifications';
 function App() {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
     const [showMobileChat, setShowMobileChat] = useState(false);
-    const { addOptimisticMessage, refetch } = useMessages();
+    const { addOptimisticMessage, refetch, setContactId } = useMessages();
     const rootRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -18,13 +18,15 @@ function App() {
 
     const handleSelectChat = (contactId: string) => {
         setSelectedChat(contactId);
+        setContactId(contactId);
         setShowMobileChat(true);
     };
 
     const handleBack = useCallback(() => {
         setShowMobileChat(false);
         setSelectedChat(null);
-    }, []);
+        setContactId(null);
+    }, [setContactId]);
 
     const handleMessageSent = () => {
         // Realtime subscription handles this automatically
