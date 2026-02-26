@@ -23,16 +23,25 @@ export const AudioPlayer = ({ url }: AudioPlayerProps) => {
     useEffect(() => {
         if (!containerRef.current) return;
 
+        // iOS PWA fix: WaveSurfer's default Web Audio backend calls
+        // `await audioContext.resume()` inside playPause(), which breaks
+        // iOS's synchronous user-gesture requirement and silently blocks audio.
+        // Passing a native <audio> element as `media` makes playback go through
+        // HTMLAudioElement.play() instead, which iOS handles correctly.
+        const mediaEl = new Audio();
+        mediaEl.crossOrigin = 'anonymous';
+
         wavesurfer.current = WaveSurfer.create({
             container: containerRef.current,
-            waveColor: '#cbd5e1', // Light slate
-            progressColor: '#ef4444', // Red accent
+            waveColor: '#cbd5e1',
+            progressColor: '#ef4444',
             cursorColor: 'transparent',
             barWidth: 2,
             barRadius: 4,
             barGap: 3,
             height: 32,
             normalize: true,
+            media: mediaEl,
         });
 
         wavesurfer.current.load(url);
@@ -55,10 +64,9 @@ export const AudioPlayer = ({ url }: AudioPlayerProps) => {
     }, [url]);
 
     const togglePlay = () => {
-        if (wavesurfer.current && isReady) {
-            wavesurfer.current.playPause();
-            setIsPlaying(!isPlaying);
-        }
+        if (!wavesurfer.current || !isReady) return;
+        wavesurfer.current.playPause();
+        setIsPlaying(!isPlaying);
     };
 
     return (
