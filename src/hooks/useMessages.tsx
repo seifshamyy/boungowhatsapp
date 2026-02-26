@@ -40,7 +40,9 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
 
         try {
-            setLoading(true);
+            // Do NOT setLoading(true) here — background refetches must not
+            // unmount the NeuralFeed / AudioPlayer (which destroys WaveSurfer).
+            // Loading is set by setContactId before calling this.
             setError(null);
 
             // Fetch only this contact's messages.
@@ -68,6 +70,7 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const setContactId = useCallback((id: string | null) => {
         contactIdRef.current = id;
         setMessages([]); // Clear immediately on chat switch to avoid stale flash
+        setLoading(true); // Show spinner only on contact switch, not background refetches
         fetchMessages(id);
     }, [fetchMessages]);
 
