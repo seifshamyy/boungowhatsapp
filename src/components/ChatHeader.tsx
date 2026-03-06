@@ -101,12 +101,12 @@ export const ChatHeader = ({ contactId, onBack, showBackButton, onChatDeleted }:
             >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                     {showBackButton && (
-                        <button onClick={onBack} className="p-2 -ml-1 rounded-full hover:bg-slate-100 text-emerald-500 active:bg-slate-200">
+                        <button onClick={onBack} className="p-2 -ml-1 rounded-full hover:bg-slate-100 text-[var(--color-primary)] active:bg-slate-200">
                             <ArrowLeft size={22} />
                         </button>
                     )}
 
-                    <button onClick={() => setInfoOpen(true)} className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm active:scale-95 transition-transform">
+                    <button onClick={() => setInfoOpen(true)} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm active:scale-95 transition-transform" style={{ background: 'var(--color-primary)' }}>
                         <User size={18} className="text-white" />
                     </button>
 

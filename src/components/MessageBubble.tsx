@@ -58,7 +58,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                 >
                     {/* Reply Indicator */}
                     {message.is_reply === 'true' && message.reply_to_mid && (
-                        <div className="mb-2 px-2 py-1.5 rounded bg-slate-50 border-l-2 border-emerald-500 text-[11px] text-slate-500 italic">
+                        <div className="mb-2 px-2 py-1.5 rounded bg-slate-50 border-l-2 text-[11px] text-slate-500 italic" style={{ borderColor: 'var(--color-primary)' }}>
                             ↩️ Replying to message
                         </div>
                     )}
@@ -117,7 +117,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                                 {message.status === 'error' && <span className="text-emerald-600 text-[10px] font-bold">Retry</span>}
                                 {(!message.status || message.status === 'sent') && (
                                     message.mid ? (
-                                        <CheckCheck size={14} className="text-emerald-500" />
+                                        <CheckCheck size={14} style={{ color: 'var(--color-primary)' }} />
                                     ) : (
                                         <Clock size={12} className="text-slate-300" />
                                     )
@@ -142,7 +142,8 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                     </button>
 
                     <button
-                        className="absolute top-2 left-2 sm:top-4 sm:left-4 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-600 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-lg"
+                        className="absolute top-2 left-2 sm:top-4 sm:left-4 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-lg"
+                        style={{ backgroundColor: 'var(--color-primary)' }}
                         onClick={(e) => {
                             e.stopPropagation();
                             handleDownload();

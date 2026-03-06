@@ -218,7 +218,8 @@ export const AdminConfig = () => {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-md"
+                    className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 shadow-md"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
                 >
                     {saving ? (
                         <RefreshCw size={16} className="animate-spin" />
@@ -387,7 +388,8 @@ export const AdminConfig = () => {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-md"
+                    className="flex items-center gap-2 px-6 py-2.5 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 shadow-md"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
                 >
                     {saving ? <RefreshCw size={16} className="animate-spin" /> : saveSuccess ? <Check size={16} /> : <Save size={16} />}
                     {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save All'}

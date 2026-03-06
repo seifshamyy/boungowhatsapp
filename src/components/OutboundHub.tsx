@@ -449,21 +449,22 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
             />
 
             {error && (
-                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 bg-emerald-600 text-white text-[11px] sm:text-xs px-4 py-2 rounded-xl z-50 shadow-lg font-bold">
+                <div className="absolute bottom-full left-2 right-2 sm:left-4 sm:right-4 mb-2 text-white text-[11px] sm:text-xs px-4 py-2 rounded-xl z-50 shadow-lg font-bold" style={{ backgroundColor: 'var(--color-primary)' }}>
                     ⚠️ {error}
                 </div>
             )}
 
             {/* Recording UI */}
             {isRecording && (
-                <div className="mb-2 p-2 sm:p-3 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between shadow-sm">
+                <div className="mb-2 p-2 sm:p-3 rounded-2xl flex items-center justify-between shadow-sm border" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 8%, white)', borderColor: 'color-mix(in srgb, var(--color-primary) 20%, white)' }}>
                     <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-emerald-600 font-bold text-xs sm:text-sm">{formatTime(recordingTime)}</span>
+                        <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-primary)' }} />
+                        <span className="font-bold text-xs sm:text-sm" style={{ color: 'var(--color-primary)' }}>{formatTime(recordingTime)}</span>
                     </div>
                     <button
                         onClick={stopRecording}
-                        className="px-4 py-1.5 bg-emerald-600 text-white rounded-full text-xs sm:text-sm font-bold shadow-sm"
+                        className="px-4 py-1.5 text-white rounded-full text-xs sm:text-sm font-bold shadow-sm"
+                        style={{ backgroundColor: 'var(--color-primary)' }}
                     >
                         Send Audio
                     </button>
@@ -472,9 +473,9 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
 
             {/* Sending indicator - Only for file/audio uploads */}
             {sending && (selectedFile || isRecording) && (
-                <div className="mb-2 p-2 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2">
-                    <Loader2 size={14} className="text-emerald-500 animate-spin" />
-                    <span className="text-emerald-600 text-xs font-bold font-mono">UPLOADING...</span>
+                <div className="mb-2 p-2 rounded-xl flex items-center gap-2 border" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 8%, white)', borderColor: 'color-mix(in srgb, var(--color-primary) 20%, white)' }}>
+                    <Loader2 size={14} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+                    <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-primary)' }}>UPLOADING...</span>
                 </div>
             )}
 
@@ -484,15 +485,15 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
                     {filePreview ? (
                         <img src={filePreview} alt="Preview" className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-xl border border-white shadow-sm" />
                     ) : (
-                        <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-                            <Mic size={20} className="text-emerald-500" />
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, white)' }}>
+                            <Mic size={20} style={{ color: 'var(--color-primary)' }} />
                         </div>
                     )}
                     <div className="flex-1 min-w-0">
                         <p className="text-slate-900 text-xs sm:text-sm font-bold truncate">{selectedFile.name}</p>
                         <p className="text-slate-500 text-[10px] sm:text-xs">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                     </div>
-                    <button onClick={clearFile} className="p-2 hover:bg-emerald-50 rounded-full text-slate-400 hover:text-emerald-500 transition-colors">
+                    <button onClick={clearFile} className="p-2 rounded-full text-slate-400 hover:text-[var(--color-primary)] transition-colors">
                         <X size={18} />
                     </button>
                 </div>
@@ -503,12 +504,12 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
 
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2.5 rounded-full text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all"
+                        className="p-2.5 rounded-full text-slate-400 hover:text-[var(--color-primary)] transition-all"
                     >
                         <Paperclip size={20} />
                     </button>
 
-                    <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-emerald-500/30 focus-within:bg-white transition-all">
+                    <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-100 focus-within:bg-white transition-all">
                         <textarea
                             ref={textareaRef}
                             value={input}
@@ -525,7 +526,8 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
                         <button
                             onClick={handleSend}
                             disabled={sending && !!selectedFile} // Only disable if sending a FILE
-                            className="p-2.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
+                            className="p-2.5 rounded-full text-white transition-all shadow-md active:scale-95 disabled:opacity-50"
+                            style={{ backgroundColor: 'var(--color-primary)' }}
                         >
                             {(sending && !!selectedFile) ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
                         </button>
@@ -533,7 +535,7 @@ export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }
                         <button
                             onClick={startRecording}
                             disabled={sending}
-                            className="p-2.5 rounded-full text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all active:scale-95 disabled:opacity-50"
+                            className="p-2.5 rounded-full text-slate-400 hover:text-[var(--color-primary)] transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Mic size={20} />
                         </button>
