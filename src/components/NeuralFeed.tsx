@@ -38,10 +38,10 @@ export const NeuralFeed = ({ selectedChat }: NeuralFeedProps) => {
 
     if (!selectedChat) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-white">
+            <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: 'var(--color-chat-bg)' }}>
                 <div className="text-center">
-                    <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-6 border border-emerald-100 shadow-sm">
-                        <MessageSquare size={40} className="text-emerald-500" />
+                    <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-sm" style={{ backgroundColor: 'var(--color-outgoing-bubble)' }}>
+                        <MessageSquare size={40} style={{ color: 'var(--color-primary)' }} />
                     </div>
                     <h3 className="text-slate-900 text-2xl font-bold mb-2">{config.appName}</h3>
                     <p className="text-slate-500 text-sm max-w-xs mx-auto">
@@ -54,11 +54,11 @@ export const NeuralFeed = ({ selectedChat }: NeuralFeedProps) => {
 
     if (loading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-white">
+            <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: 'var(--color-chat-bg)' }}>
                 <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: 'var(--color-primary)', animationDelay: '0ms' }} />
+                    <div className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: 'var(--color-primary)', animationDelay: '150ms' }} />
+                    <div className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: 'var(--color-primary)', animationDelay: '300ms' }} />
                 </div>
             </div>
         );
@@ -66,7 +66,7 @@ export const NeuralFeed = ({ selectedChat }: NeuralFeedProps) => {
 
     if (error) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-white px-4">
+            <div className="flex-1 flex items-center justify-center px-4" style={{ backgroundColor: 'var(--color-chat-bg)' }}>
                 <div className="text-red-600 text-sm font-bold bg-red-50 px-5 py-3 rounded-xl border border-red-200 shadow-sm text-center">
                     ⚠️ {error}
                 </div>

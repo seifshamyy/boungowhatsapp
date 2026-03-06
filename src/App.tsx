@@ -105,7 +105,7 @@ interface ChatAppProps {
 function ChatApp({ rootRef, selectedChat, showMobileChat, handleSelectChat, handleBack, handleMessageSent, addOptimisticMessage, refetch }: ChatAppProps) {
     const { config } = useConfig();
     return (
-        <div ref={rootRef} className="w-full h-full overflow-hidden bg-white">
+        <div ref={rootRef} className="w-full h-full overflow-hidden" style={{ backgroundColor: 'var(--color-chat-bg)' }}>
             {/* 
               Mobile: Sliding container (200vw width)
               Desktop: Normal Flex container (100% width)
@@ -129,7 +129,7 @@ function ChatApp({ rootRef, selectedChat, showMobileChat, handleSelectChat, hand
                 </div>
 
                 {/* Chat Area: 50% width on mobile (1 screen), flex-1 on desktop */}
-                <div className="w-[50%] md:flex-1 h-full flex flex-col bg-white min-w-0">
+                <div className="w-[50%] md:flex-1 h-full flex flex-col min-w-0" style={{ backgroundColor: 'var(--color-chat-bg)' }}>
                     {selectedChat ? (
                         <>
                             <ChatHeader
@@ -146,10 +146,10 @@ function ChatApp({ rootRef, selectedChat, showMobileChat, handleSelectChat, hand
                             />
                         </>
                     ) : (
-                        <div className="flex-1 flex items-center justify-center bg-white">
+                        <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: 'var(--color-chat-bg)' }}>
                             <div className="text-center px-4">
-                                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                                    <svg viewBox="0 0 24 24" width="40" className="text-emerald-500" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center border border-slate-100" style={{ backgroundColor: `${config.colorPrimary}18` }}>
+                                    <svg viewBox="0 0 24 24" width="40" style={{ color: 'var(--color-primary)' }} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                                     </svg>
                                 </div>

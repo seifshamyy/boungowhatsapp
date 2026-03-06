@@ -322,9 +322,9 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
     return (
         <>
-            <div className="w-full h-full bg-[#ffffff] border-r border-slate-200 flex flex-col">
+            <div className="w-full h-full border-r border-slate-200 flex flex-col" style={{ backgroundColor: 'var(--color-sidebar-bg)' }}>
                 {/* Header */}
-                <div className="px-3 sm:px-4 flex items-center justify-between border-b border-slate-200 bg-white flex-shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))', paddingBottom: '0.5rem' }}>
+                <div className="px-3 sm:px-4 flex items-center justify-between border-b border-slate-200 flex-shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))', paddingBottom: '0.5rem', backgroundColor: 'var(--color-sidebar-bg)' }}>
                     <div className="flex items-center gap-2">
                         <img
                             src={config.sidebarLogoUrl}
@@ -346,16 +346,16 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                 const success = await subscribeToPush();
                                 if (success) setNotifEnabled(true);
                             }}
-                            className={`p-1.5 rounded-full hover:bg-slate-100 transition-colors ${notifEnabled ? 'text-emerald-500' : 'text-slate-400 hover:text-emerald-500 animate-pulse'
+                            className={`p-1.5 rounded-full hover:bg-slate-100 transition-colors ${notifEnabled ? 'text-[var(--color-primary)]' : 'text-slate-400 hover:text-[var(--color-primary)] animate-pulse'
                                 }`}
                             title={notifEnabled ? 'Notifications enabled' : 'Enable notifications'}
                         >
                             {notifEnabled ? <BellRing size={16} /> : <Bell size={16} />}
                         </button>
-                        <button onClick={openTagManagerGlobal} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-emerald-500 transition-colors" title="Manage Tags">
+                        <button onClick={openTagManagerGlobal} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-[var(--color-primary)] transition-colors" title="Manage Tags">
                             <TagIcon size={16} />
                         </button>
-                        <button className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-emerald-500 transition-colors">
+                        <button className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 text-[var(--color-primary)] transition-colors">
                             <Plus size={18} />
                         </button>
                     </div>
@@ -414,9 +414,13 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                     key={contact.id}
                                     onClick={() => onSelectChat(contact.id)}
                                     className={`w-full p-2.5 sm:p-3 flex items-center gap-3 transition-all cursor-pointer border-l-2 ${selectedChat === contact.id
-                                        ? 'bg-emerald-50 border-emerald-500'
+                                        ? ''
                                         : 'hover:bg-slate-50 border-transparent'
                                         }`}
+                                    style={selectedChat === contact.id ? {
+                                        backgroundColor: `${config.colorPrimary}18`,
+                                        borderColor: config.colorPrimary,
+                                    } : undefined}
                                 >
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
@@ -449,7 +453,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                             <span className="font-semibold text-slate-900 truncate text-sm sm:text-base text-left">
                                                 {contact.name || `+${contact.id}`}
                                             </span>
-                                            <span className={`text-[9px] sm:text-[10px] ml-1.5 flex-shrink-0 ${contact.unreadCount > 0 && selectedChat !== contact.id ? 'text-emerald-500 font-bold' : 'text-slate-400'}`}>
+                                            <span className={`text-[9px] sm:text-[10px] ml-1.5 flex-shrink-0 ${contact.unreadCount > 0 && selectedChat !== contact.id ? 'text-[var(--color-primary)] font-bold' : 'text-slate-400'}`}>
                                                 {formatTime(contact.lastMessageTime)}
                                             </span>
                                         </div>
@@ -481,7 +485,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                             </div>
                                             <button
                                                 onClick={(e) => openTagManagerForContact(e, contact.id, contact.tags || [])}
-                                                className="p-0.5 rounded hover:bg-emerald-50 text-slate-300 hover:text-emerald-500 transition-colors flex-shrink-0"
+                                                className="p-0.5 rounded text-slate-300 hover:text-[var(--color-primary)] transition-colors flex-shrink-0"
                                                 title="Assign tags"
                                             >
                                                 <TagIcon size={12} />
@@ -495,7 +499,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                 </PullToRefresh>
 
                 {/* Footer */}
-                <div className="hidden sm:flex h-8 px-4 items-center justify-center border-t border-slate-100 bg-slate-50 flex-shrink-0">
+                <div className="hidden sm:flex h-8 px-4 items-center justify-center border-t border-slate-100 flex-shrink-0" style={{ backgroundColor: 'var(--color-sidebar-bg)' }}>
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{config.footerText}</span>
                 </div>
             </div>

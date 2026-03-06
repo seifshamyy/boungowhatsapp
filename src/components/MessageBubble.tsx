@@ -46,10 +46,14 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                     className={`
             relative max-w-[85%] sm:max-w-[75%] md:max-w-[65%] px-3 py-2 rounded-2xl shadow-sm
             ${isOwn
-                            ? 'bg-emerald-50 text-slate-900 border border-emerald-100 rounded-br-sm'
-                            : 'bg-white text-slate-900 border border-slate-100 rounded-bl-sm'
+                            ? 'text-slate-900 border rounded-br-sm'
+                            : 'text-slate-900 border border-slate-100 rounded-bl-sm'
                         }
           `}
+                    style={{
+                        backgroundColor: isOwn ? 'var(--color-outgoing-bubble)' : 'var(--color-incoming-bubble)',
+                        borderColor: isOwn ? 'var(--color-outgoing-bubble)' : undefined,
+                    }}
                     dir={isRTL ? 'rtl' : 'ltr'}
                 >
                     {/* Reply Indicator */}
