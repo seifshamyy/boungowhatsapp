@@ -66,14 +66,11 @@ export const MessageBubble = ({ message, allMessages }: MessageBubbleProps) => {
                         <div className="mb-2 rounded-lg bg-slate-50 border-l-2 overflow-hidden" style={{ borderColor: 'var(--color-primary)' }}>
                             {repliedTo ? (
                                 repliedTo.type === 'image' && repliedTo.media_url ? (
-                                    <div className="flex items-center gap-2 p-1.5">
-                                        <img
-                                            src={repliedTo.media_url}
-                                            alt="Replied image"
-                                            className="w-10 h-10 object-cover rounded flex-shrink-0"
-                                        />
-                                        <span className="text-[11px] text-slate-400 italic">Photo</span>
-                                    </div>
+                                    <img
+                                        src={repliedTo.media_url}
+                                        alt="Replied image"
+                                        className="w-full max-h-24 object-cover"
+                                    />
                                 ) : (
                                     <p className="px-2 py-1.5 text-[11px] text-slate-500 truncate">
                                         {repliedTo.text || 'Media message'}
