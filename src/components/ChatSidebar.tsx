@@ -38,7 +38,7 @@ const saveReadMessages = (ids: Set<number>) => {
 };
 
 const AVATAR_COLORS = [
-    { from: '#10b981', to: '#047857', text: '#10b981' }, // Emerald
+    { from: '#f97316', to: '#c2410c', text: '#f97316' }, // Orange
     { from: '#3b82f6', to: '#1d4ed8', text: '#3b82f6' }, // Blue
     { from: '#8b5cf6', to: '#6d28d9', text: '#8b5cf6' }, // Violet
     { from: '#0ea5e9', to: '#0369a1', text: '#0ea5e9' }, // Sky
