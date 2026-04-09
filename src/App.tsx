@@ -16,14 +16,18 @@ function App() {
     const rootRef = useRef<HTMLDivElement>(null);
     // Ref so the popstate listener always reads the latest value without re-subscribing
     const showMobileChatRef = useRef(false);
+    // Snapshot of selectedChat readable inside async callbacks without stale closure
+    const selectedChatRef = useRef<string | null>(null);
     // Guard: prevent handleBack from firing more than once per navigation.
-    // Without this, swipe + hardware-back racing or double-tap causes two
-    // setContactId(null) calls which can freeze the app.
     const isNavigatingBackRef = useRef(false);
 
     useEffect(() => {
         showMobileChatRef.current = showMobileChat;
     }, [showMobileChat]);
+
+    useEffect(() => {
+        selectedChatRef.current = selectedChat;
+    }, [selectedChat]);
 
     useEffect(() => {
         registerServiceWorker();
@@ -73,20 +77,23 @@ function App() {
     // selectedChat is cleared AFTER the slide animation finishes (220ms) so the
     // NeuralFeed stays mounted and visible during the back-slide — no content flicker.
     const handleBack = useCallback(() => {
-        // Guard: if already navigating back (e.g. swipe + hardware-back racing),
-        // drop the second call entirely — double setContactId(null) freezes the app.
+        // Guard: drop second call if already mid-navigation (swipe + hardware-back race)
         if (isNavigatingBackRef.current) return;
         isNavigatingBackRef.current = true;
         setShowMobileChat(false);
-        // Delay ALL state teardown until after the slide animation (220ms).
-        // setContactId(null) clears messages → NeuralFeed re-renders → layout work
-        // mid-animation = jank. Keeping both intact during the slide = smooth.
+        // Snapshot which chat we're leaving so the timeout doesn't accidentally
+        // clear a NEW chat the user taps during the 230ms slide animation.
+        const chatBeingLeft = selectedChatRef.current;
         setTimeout(() => {
-            setSelectedChat(null);
-            setContactId(null);
+            // Only null out selectedChat if the user hasn't opened a different one
+            // during the animation. If they did, leave their new selection intact.
+            setSelectedChat(prev => prev === chatBeingLeft ? null : prev);
+            // Do NOT call setContactId(null) here — it races with setContactId(newId)
+            // from handleSelectChat and wipes the new contact's fetch, leaving
+            // NeuralFeed with loading=false + empty messages = white screen.
             isNavigatingBackRef.current = false;
         }, 230);
-    }, [setContactId]);
+    }, []);
 
     // Used by in-app back button and swipe gesture.
     // If we pushed a history entry when opening the chat, pop it — this triggers
