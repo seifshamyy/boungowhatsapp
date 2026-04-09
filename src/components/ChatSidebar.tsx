@@ -527,14 +527,17 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                 <button
                                     key={contact.id}
                                     onClick={() => onSelectChat(contact.id)}
-                                    className="w-full p-2.5 sm:p-3 flex items-center gap-3 transition-all cursor-pointer border-l-2 select-none active:scale-[0.98] active:opacity-80"
-                                    style={
-                                        selectedChat === contact.id
-                                            ? { backgroundColor: `${config.colorPrimary}18`, borderColor: config.colorPrimary }
-                                            : contact.unreadCount > 0
-                                                ? { backgroundColor: `${config.colorAccent}08`, borderColor: config.colorAccent }
-                                                : { borderColor: 'transparent' }
-                                    }
+                                    className="mx-2 my-1 p-2.5 sm:p-3 flex items-center gap-3 transition-all cursor-pointer rounded-xl border select-none active:scale-[0.98] active:opacity-80"
+                                    style={{
+                                        width: 'calc(100% - 1rem)',
+                                        ...(
+                                            selectedChat === contact.id
+                                                ? { backgroundColor: `${config.colorPrimary}18`, borderColor: `${config.colorPrimary}40` }
+                                                : contact.unreadCount > 0
+                                                    ? { backgroundColor: `${config.colorAccent}14`, borderColor: `${config.colorAccent}30` }
+                                                    : { backgroundColor: '#f8fafc', borderColor: '#e9edf2' }
+                                        )
+                                    }}
                                 >
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
