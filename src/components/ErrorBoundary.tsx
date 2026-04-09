@@ -7,20 +7,48 @@ interface Props {
 interface State {
     error: Error | null;
     errorInfo: ErrorInfo | null;
+    asyncError: string | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-    state: State = { error: null, errorInfo: null };
+    state: State = { error: null, errorInfo: null, asyncError: null };
+
+    private onError = (event: ErrorEvent) => {
+        console.error('[GlobalError]', event.error ?? event.message);
+        this.setState(prev => ({
+            asyncError: prev.asyncError
+                ? prev.asyncError + '\n' + (event.error?.toString() ?? event.message)
+                : (event.error?.toString() ?? event.message)
+        }));
+    };
+
+    private onUnhandledRejection = (event: PromiseRejectionEvent) => {
+        console.error('[UnhandledRejection]', event.reason);
+        this.setState(prev => ({
+            asyncError: prev.asyncError
+                ? prev.asyncError + '\n' + String(event.reason)
+                : String(event.reason)
+        }));
+    };
+
+    componentDidMount() {
+        window.addEventListener('error', this.onError);
+        window.addEventListener('unhandledrejection', this.onUnhandledRejection);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('error', this.onError);
+        window.removeEventListener('unhandledrejection', this.onUnhandledRejection);
+    }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         this.setState({ error, errorInfo });
-        // Log to console so it's visible in browser devtools / Railway logs
         console.error('[ErrorBoundary] Caught crash:', error, errorInfo);
     }
 
     render() {
-        const { error, errorInfo } = this.state;
-        if (!error) return this.props.children;
+        const { error, errorInfo, asyncError } = this.state;
+        if (!error && !asyncError) return this.props.children;
 
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -31,12 +59,23 @@ export class ErrorBoundary extends Component<Props, State> {
                     </div>
 
                     <div className="p-5 space-y-4">
-                        <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Error</p>
-                            <p className="text-sm font-mono text-red-600 bg-red-50 rounded-lg px-3 py-2 break-words">
-                                {error.toString()}
-                            </p>
-                        </div>
+                        {error && (
+                            <div>
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Error</p>
+                                <p className="text-sm font-mono text-red-600 bg-red-50 rounded-lg px-3 py-2 break-words">
+                                    {error.toString()}
+                                </p>
+                            </div>
+                        )}
+
+                        {asyncError && (
+                            <div>
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Async Error</p>
+                                <pre className="text-sm font-mono text-red-600 bg-red-50 rounded-lg px-3 py-2 break-words whitespace-pre-wrap">
+                                    {asyncError}
+                                </pre>
+                            </div>
+                        )}
 
                         {errorInfo && (
                             <div>

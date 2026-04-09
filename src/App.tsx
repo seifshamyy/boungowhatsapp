@@ -49,7 +49,13 @@ function App() {
             if (vv.offsetTop > 0) {
                 window.scrollTo(0, 0);
             }
-            document.documentElement.style.setProperty('--vv-height', `${Math.round(vv.height)}px`);
+            const h = Math.round(vv.height);
+            // Guard: never set --vv-height to 0 — this collapses the root container
+            // to 0px and causes a silent white screen. Can happen during rotation or
+            // Android keyboard flicker when the viewport briefly reports height=0.
+            if (h > 100) {
+                document.documentElement.style.setProperty('--vv-height', `${h}px`);
+            }
         };
 
         vv.addEventListener('resize', update);
