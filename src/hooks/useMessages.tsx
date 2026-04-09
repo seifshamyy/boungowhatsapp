@@ -192,10 +192,10 @@ export const MessagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         };
         window.addEventListener('online', onOnline);
 
-        // RESILIENCE 3: Safety-net poll every 30s
+        // RESILIENCE 3: Safety-net poll every 60s
         const safetyPoll = setInterval(() => {
             fetchMessagesRef.current();
-        }, 30000);
+        }, 60000);
 
         return () => {
             document.removeEventListener('visibilitychange', onVisibilityChange);

@@ -4,16 +4,19 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import { ConfigProvider } from './context/ConfigContext'
 import { MessagesProvider } from './hooks/useMessages'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <BrowserRouter>
-            <ConfigProvider>
-                <MessagesProvider>
-                    <App />
-                </MessagesProvider>
-            </ConfigProvider>
-        </BrowserRouter>
+        <ErrorBoundary>
+            <BrowserRouter>
+                <ConfigProvider>
+                    <MessagesProvider>
+                        <App />
+                    </MessagesProvider>
+                </ConfigProvider>
+            </BrowserRouter>
+        </ErrorBoundary>
     </React.StrictMode>,
 )

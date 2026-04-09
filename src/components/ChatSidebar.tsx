@@ -304,10 +304,10 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         const onOnline = () => fetchContactsRef.current();
         window.addEventListener('online', onOnline);
 
-        // Safety-net poll every 30s for both messages and contacts
+        // Safety-net poll every 60s for both messages and contacts
         const safetyPoll = setInterval(() => {
             fetchContactsRef.current();
-        }, 30000);
+        }, 60000);
 
         return () => {
             document.removeEventListener('visibilitychange', onVisibilityChange);
