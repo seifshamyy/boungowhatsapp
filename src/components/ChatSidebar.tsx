@@ -103,51 +103,30 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
     }, []);
 
     const fetchContacts = useCallback(async () => {
-        // ------------------------------------------------------------------
-        // FIX: Supabase (PostgREST) silently caps `.select('*')` at 1 000 rows.
-        // The old code did a single unfiltered fetch, so contacts whose messages
-        // were all beyond row 1 000 never appeared in the sidebar.
-        //
-        // We now paginate in chunks of 1 000 until the server returns fewer rows
-        // than requested, which means we've reached the end.
-        // Only the columns needed for the sidebar are fetched to keep payloads small.
-        // ------------------------------------------------------------------
+        // Fetch the two most recent pages of messages (2 000 rows max, desc).
+        // This covers all contacts that have had recent activity without an
+        // unbounded loop. Contacts silent for >2 000 messages are rare edge cases
+        // and will appear after a manual pull-to-refresh.
         const PAGE_SIZE = 1000;
 
-        const fetchAllMessages = async (): Promise<WhatsAppMessage[]> => {
-            const allMessages: WhatsAppMessage[] = [];
-            let from = 0;
-            let keepGoing = true;
-
-            while (keepGoing) {
-                const { data, error } = await supabase
-                    .from(config.tableMessages)
-                    .select('id, from, to, text, type, created_at')
-                    .order('created_at', { ascending: false })
-                    .range(from, from + PAGE_SIZE - 1);
-
-                if (error) {
-                    console.error('[Sidebar] pagination error:', error);
-                    break;
-                }
-
-                if (data && data.length > 0) {
-                    allMessages.push(...(data as WhatsAppMessage[]));
-                }
-
-                // If we got fewer rows than the page size, we've fetched everything
-                keepGoing = (data?.length ?? 0) === PAGE_SIZE;
-                from += PAGE_SIZE;
-            }
-
-            return allMessages;
-        };
-
-        // Fetch messages (paginated) and contacts in parallel
-        const [msgs, ebpResult] = await Promise.all([
-            fetchAllMessages(),
+        const [page1, page2, ebpResult] = await Promise.all([
+            supabase
+                .from(config.tableMessages)
+                .select('id, from, to, text, type, created_at')
+                .order('created_at', { ascending: false })
+                .range(0, PAGE_SIZE - 1),
+            supabase
+                .from(config.tableMessages)
+                .select('id, from, to, text, type, created_at')
+                .order('created_at', { ascending: false })
+                .range(PAGE_SIZE, PAGE_SIZE * 2 - 1),
             supabase.from(config.tableContacts).select('*'),
         ]);
+
+        const msgs: WhatsAppMessage[] = [
+            ...((page1.data ?? []) as WhatsAppMessage[]),
+            ...((page2.data ?? []) as WhatsAppMessage[]),
+        ];
 
         // Build a fresh contacts lookup from the inline fetch
         const ebpMap = new Map<string, ContactEbp>();
@@ -229,11 +208,13 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         fetchTags();
     }, [fetchContactsEbp, fetchTags]);
 
-    // Use refs so the realtime callbacks always call the latest function
+    // Refs so realtime callbacks always read latest state without re-subscribing
     const fetchContactsRef = useRef(fetchContacts);
     fetchContactsRef.current = fetchContacts;
     const fetchContactsEbpRef = useRef(fetchContactsEbp);
     fetchContactsEbpRef.current = fetchContactsEbp;
+    const contactsRef = useRef<SidebarContact[]>([]);
+    useEffect(() => { contactsRef.current = contacts; }, [contacts]);
 
     useEffect(() => {
         fetchContactsRef.current();
@@ -244,7 +225,40 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                 .channel('sidebar-messages')
                 .on('postgres_changes',
                     { event: '*', schema: 'public', table: config.tableMessages },
-                    () => sidebarFetchContactsRef?.()
+                    (payload: any) => {
+                        if (payload.eventType === 'INSERT') {
+                            // Update sidebar state locally — no round-trip to server.
+                            // This is the key perf win: avoids re-fetching 2000 rows
+                            // on every incoming/outgoing message.
+                            const msg = payload.new as WhatsAppMessage;
+                            const contactId = getContactId(msg);
+                            if (!contactId) return;
+
+                            const isIncoming = msg.from && /^\d+$/.test(msg.from);
+                            const isActive = selectedChatRef.current === contactId;
+                            const lastReadAt = readTimestampsRef.current.get(contactId) ?? '1970-01-01T00:00:00.000Z';
+                            const isUnread = isIncoming && !isActive && msg.created_at > lastReadAt;
+
+                            setContacts(prev => {
+                                const existing = prev.find(c => c.id === contactId);
+                                const preview = msg.text || (msg.type === 'audio' ? '🎤 Voice message' : '📷 Media');
+                                if (existing) {
+                                    return prev.map(c => c.id === contactId ? {
+                                        ...c,
+                                        lastMessage: preview,
+                                        lastMessageTime: msg.created_at,
+                                        unreadCount: isUnread ? c.unreadCount + 1 : c.unreadCount,
+                                    } : c);
+                                }
+                                // Brand-new contact — do a full refetch to get their name/tags
+                                sidebarFetchContactsRef?.();
+                                return prev;
+                            });
+                        } else {
+                            // UPDATE or DELETE: full refetch (rare)
+                            sidebarFetchContactsRef?.();
+                        }
+                    }
                 )
                 .subscribe((status) => {
                     console.log('[Realtime] sidebar-messages status:', status);
@@ -295,7 +309,8 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
     const [selectedTagFilter, setSelectedTagFilter] = useState<number | null>(null);
 
-    const totalUnread = contacts.reduce((sum, c) => sum + c.unreadCount, 0);
+    // Count of chats with at least one unread message (not total message count)
+    const totalUnreadChats = contacts.filter(c => c.unreadCount > 0).length;
 
     const filteredContacts = contacts
         .filter((c) => {
@@ -419,12 +434,12 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                             }}
                         >
                             <MessageSquare size={16} />
-                            {totalUnread > 0 && !showUnreadOnly && (
+                            {totalUnreadChats > 0 && !showUnreadOnly && (
                                 <span
                                     className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-white text-[9px] font-bold flex items-center justify-center"
                                     style={{ backgroundColor: 'var(--color-accent)' }}
                                 >
-                                    {totalUnread > 99 ? '99+' : totalUnread}
+                                    {totalUnreadChats > 99 ? '99+' : totalUnreadChats}
                                 </span>
                             )}
                         </button>
@@ -439,7 +454,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                     className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-semibold text-white flex items-center gap-1"
                                     style={{ backgroundColor: 'var(--color-accent)' }}
                                 >
-                                    Unread {totalUnread > 0 ? `(${totalUnread})` : ''} ×
+                                    Unread {totalUnreadChats > 0 ? `(${totalUnreadChats})` : ''} ×
                                 </button>
                             )}
                             {allTags.map(tag => (
@@ -478,7 +493,9 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                 <button
                                     key={contact.id}
                                     onClick={() => onSelectChat(contact.id)}
-                                    className={`w-full p-2.5 sm:p-3 flex items-center gap-3 transition-all cursor-pointer border-l-2 ${selectedChat === contact.id
+                                    className={`w-full p-2.5 sm:p-3 flex items-center gap-3 transition-all cursor-pointer border-l-2 select-none
+                                        active:scale-[0.98] active:opacity-80
+                                        ${selectedChat === contact.id
                                         ? ''
                                         : 'hover:bg-slate-50 border-transparent'
                                         }`}

@@ -172,13 +172,15 @@ function ChatApp({ rootRef, selectedChat, showMobileChat, handleSelectChat, hand
               Desktop: Normal Flex container (100% width)
             */}
             <div
-                className="flex h-full transition-transform duration-300 ease-out md:transform-none md:w-full"
+                className="flex h-full md:transform-none md:w-full"
                 style={{
-                    // On mobile, we need 2 screens width. On desktop, we let CSS handle it (w-full).
                     width: window.innerWidth < 768 ? '200vw' : '100%',
                     transform: window.innerWidth < 768
                         ? (showMobileChat ? 'translateX(-50%)' : 'translateX(0)')
                         : 'none',
+                    // WhatsApp-style slide: fast attack (200ms), spring-like cubic-bezier
+                    transition: 'transform 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    willChange: 'transform',
                 }}
             >
                 {/* Sidebar: 50% width on mobile (1 screen), fixed width on desktop */}
