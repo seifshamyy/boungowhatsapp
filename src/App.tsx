@@ -70,8 +70,13 @@ function App() {
     // NeuralFeed stays mounted and visible during the back-slide — no content flicker.
     const handleBack = useCallback(() => {
         setShowMobileChat(false);
-        setContactId(null);
-        setTimeout(() => setSelectedChat(null), 230);
+        // Delay ALL state teardown until after the slide animation (220ms).
+        // setContactId(null) clears messages → NeuralFeed re-renders → layout work
+        // mid-animation = jank. Keeping both intact during the slide = smooth.
+        setTimeout(() => {
+            setSelectedChat(null);
+            setContactId(null);
+        }, 230);
     }, [setContactId]);
 
     // Used by in-app back button and swipe gesture.
