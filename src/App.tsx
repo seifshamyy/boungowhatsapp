@@ -131,7 +131,13 @@ function App() {
             const deltaY = Math.abs(touch.clientY - startY);
 
             if (deltaX > MIN_SWIPE && deltaX > deltaY * 1.5) {
-                handleBackButton(); // pops history + resets state
+                // Call handleBack() directly — no async history.back() roundtrip.
+                // replaceState clears the mobileChat flag synchronously so the
+                // popstate listener doesn't fire handleBack() a second time.
+                if (window.history.state?.mobileChat) {
+                    window.history.replaceState({}, '');
+                }
+                handleBack();
             }
             isEdgeSwipe = false;
         };
