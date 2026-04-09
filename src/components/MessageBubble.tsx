@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { WhatsAppMessage, isOutgoing } from '../types';
 import { AudioPlayer } from './ui/AudioPlayer';
 import { CheckCheck, Clock, X, Download, ZoomIn, ImageIcon } from 'lucide-react';
@@ -26,6 +27,70 @@ function renderTextWithLinks(text: string) {
                 {part}
             </a>
         ) : part
+    );
+}
+
+// Portalled modal — escapes CSS transform stacking contexts on ancestor containers.
+// Without this, position:fixed is relative to the transformed slide container, not
+// the viewport, making the modal appear offset and transition janky.
+function ImageModal({ url, onClose, onDownload }: { url: string; onClose: () => void; onDownload: () => void }) {
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        // Trigger fade-in on next frame
+        const id = requestAnimationFrame(() => setVisible(true));
+        // Lock body scroll while modal is open
+        document.body.style.overflow = 'hidden';
+        return () => {
+            cancelAnimationFrame(id);
+            document.body.style.overflow = '';
+        };
+    }, []);
+
+    const close = () => {
+        setVisible(false);
+        setTimeout(onClose, 180);
+    };
+
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4"
+            style={{
+                backgroundColor: `rgba(0,0,0,${visible ? 0.95 : 0})`,
+                transition: 'background-color 180ms ease',
+            }}
+            onClick={close}
+        >
+            <button
+                className="absolute top-3 right-3 p-2.5 rounded-full bg-white/10 text-white active:bg-white/20"
+                onClick={close}
+            >
+                <X size={20} />
+            </button>
+
+            <button
+                className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-white font-bold text-xs flex items-center gap-1.5 shadow-lg"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+                onClick={(e) => { e.stopPropagation(); onDownload(); }}
+            >
+                <Download size={15} />
+                <span>Save</span>
+            </button>
+
+            <img
+                src={url}
+                alt="Full size"
+                className="max-w-full max-h-[88vh] object-contain rounded-xl select-none"
+                style={{
+                    transform: visible ? 'scale(1)' : 'scale(0.92)',
+                    opacity: visible ? 1 : 0,
+                    transition: 'transform 200ms cubic-bezier(0.34,1.56,0.64,1), opacity 180ms ease',
+                }}
+                onClick={(e) => e.stopPropagation()}
+                draggable={false}
+            />
+        </div>,
+        document.body
     );
 }
 
@@ -189,38 +254,14 @@ export const MessageBubble = ({ message, allMessages }: MessageBubbleProps) => {
                 </div>
             </div>
 
-            {/* Image Modal */}
+            {/* Image Modal — rendered via portal into document.body so CSS
+                transforms on ancestor containers don't break fixed positioning */}
             {showImageModal && displayMessage.media_url && (
-                <div
-                    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-2 sm:p-4"
-                    onClick={() => setShowImageModal(false)}
-                >
-                    <button
-                        className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
-                        onClick={() => setShowImageModal(false)}
-                    >
-                        <X size={20} />
-                    </button>
-
-                    <button
-                        className="absolute top-2 left-2 sm:top-4 sm:left-4 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-lg"
-                        style={{ backgroundColor: 'var(--color-primary)' }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload();
-                        }}
-                    >
-                        <Download size={16} />
-                        <span className="hidden sm:inline">Save Image</span>
-                    </button>
-
-                    <img
-                        src={displayMessage.media_url}
-                        alt="Full size"
-                        className="max-w-full max-h-[85vh] sm:max-h-[90vh] object-contain rounded-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
+                <ImageModal
+                    url={displayMessage.media_url}
+                    onClose={() => setShowImageModal(false)}
+                    onDownload={handleDownload}
+                />
             )}
         </>
     );
