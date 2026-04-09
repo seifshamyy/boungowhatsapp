@@ -61,21 +61,28 @@ function ImageModal({ url, onClose, onDownload }: { url: string; onClose: () => 
             }}
             onClick={close}
         >
-            <button
-                className="absolute top-3 right-3 p-2.5 rounded-full bg-white/10 text-white active:bg-white/20"
-                onClick={close}
+            {/* Top bar — safe-area aware, full width, buttons at opposite ends */}
+            <div
+                className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3"
+                style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
+                onClick={(e) => e.stopPropagation()}
             >
-                <X size={20} />
-            </button>
+                <button
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full text-white font-bold text-sm shadow-lg active:opacity-80"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
+                    onClick={onDownload}
+                >
+                    <Download size={16} />
+                    Save
+                </button>
 
-            <button
-                className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-white font-bold text-xs flex items-center gap-1.5 shadow-lg"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-                onClick={(e) => { e.stopPropagation(); onDownload(); }}
-            >
-                <Download size={15} />
-                <span>Save</span>
-            </button>
+                <button
+                    className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center active:bg-white/30"
+                    onClick={close}
+                >
+                    <X size={20} />
+                </button>
+            </div>
 
             <img
                 src={url}
