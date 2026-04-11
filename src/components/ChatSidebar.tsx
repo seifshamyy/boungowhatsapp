@@ -177,7 +177,13 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             recentByContact.get(cid)!.push(msg);
         });
 
+        if (rpcResult.error) {
+            console.error('[Sidebar] RPC error:', rpcResult.error);
+        }
+
         const rows = (rpcResult.data ?? []) as WhatsAppMessage[];
+        console.log('[Sidebar] RPC rows:', rows.length, '| ebp contacts:', ebpMap.size, '| recent msgs:', recentResult.data?.length ?? 0);
+
         setContacts(buildContacts(rows, ebpMap, recentByContact));
         setHasMore(rows.length === CONTACTS_PAGE_SIZE);
         setContactPage(0);
