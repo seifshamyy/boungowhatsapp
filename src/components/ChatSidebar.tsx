@@ -359,6 +359,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
     const formatTime = (timestamp: string) => {
         try {
+            if (!timestamp || timestamp.startsWith('1970')) return '';
             const date = new Date(timestamp);
             const now = new Date();
             const isToday = date.toDateString() === now.toDateString();
@@ -583,10 +584,12 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <p className={`text-xs truncate flex-1 text-left flex items-center gap-1 ${contact.unreadCount > 0 && selectedChat !== contact.id ? 'text-slate-900 font-medium' : 'text-slate-500'}`}>
-                                                {contact.lastMessageIsOutgoing && (
+                                                {contact.lastMessageIsOutgoing && contact.lastMessage && (
                                                     <CheckCheck size={12} className="flex-shrink-0" style={{ color: 'var(--color-primary)', opacity: 0.7 }} />
                                                 )}
-                                                <span className="truncate">{contact.lastMessage}</span>
+                                                <span className={`truncate ${!contact.lastMessage ? 'italic text-slate-300' : ''}`}>
+                                                    {contact.lastMessage || 'No messages yet'}
+                                                </span>
                                             </p>
                                         </div>
                                         {/* Tags Display + Assign Button */}
