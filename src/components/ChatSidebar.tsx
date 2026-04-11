@@ -105,12 +105,11 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
     }, []);
 
     const fetchContacts = useCallback(async () => {
-        // Fetch the two most recent pages of messages (2 000 rows max, desc).
-        // This covers all contacts that have had recent activity without an
-        // unbounded loop. Contacts silent for >2 000 messages are rare edge cases
-        // and will appear after a manual pull-to-refresh.
         const PAGE_SIZE = 1000;
 
+        // Fetch recent messages (for previews + unread counts) AND all contacts in parallel.
+        // Contacts are fetched from contacts.ebp — this is the source of truth for WHO exists.
+        // Messages only drive previews; contacts not in the recent window still appear.
         const [page1, page2, ebpResult] = await Promise.all([
             supabase
                 .from(config.tableMessages)
@@ -130,17 +129,15 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             ...((page2.data ?? []) as WhatsAppMessage[]),
         ];
 
-        // Build a fresh contacts lookup from the inline fetch
+        // Build contacts lookup
         const ebpMap = new Map<string, ContactEbp>();
         if (ebpResult.data) {
             (ebpResult.data as ContactEbp[]).forEach(c => ebpMap.set(String(c.id), c));
             setContactsMap(ebpMap);
         }
 
-        const contactMap = new Map<string, SidebarContact>();
-        // Group messages per contact to compute unread count accurately
+        // Group recent messages per contact
         const msgsByContact = new Map<string, WhatsAppMessage[]>();
-
         msgs.forEach((msg) => {
             const contactId = getContactId(msg);
             if (!contactId) return;
@@ -148,19 +145,33 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             msgsByContact.get(contactId)!.push(msg);
         });
 
+        const contactMap = new Map<string, SidebarContact>();
+
+        // 1. Seed every known contact from the contacts table so no-one is hidden
+        ebpMap.forEach((ebpContact, contactId) => {
+            contactMap.set(contactId, {
+                id: contactId,
+                name: ebpContact.name_WA || null,
+                lastMessage: '',
+                lastMessageTime: '1970-01-01T00:00:00.000Z',
+                lastMessageIsOutgoing: false,
+                unreadCount: 0,
+                tags: ebpContact.tags || [],
+                aiEnabled: ebpContact.AI_replies === 'true',
+            });
+        });
+
+        // 2. Overlay recent message data (preview, time, unread) for active contacts
         msgsByContact.forEach((contactMsgs, contactId) => {
             // msgs are descending — first is newest
             const newest = contactMsgs[0];
             const ebpContact = ebpMap.get(contactId);
 
-            // If this contact is currently open in the chat, treat all as read
             const isActiveChat = selectedChatRef.current === contactId;
             const lastReadAt = isActiveChat
-                ? new Date().toISOString()          // everything read
+                ? new Date().toISOString()
                 : (readTimestampsRef.current.get(contactId) ?? '1970-01-01T00:00:00.000Z');
 
-            // If the last message was sent by us, treat the whole conversation as read —
-            // same logic as native WhatsApp (you sent last = you've seen everything).
             const lastMsgIsOutgoing = !newest.from || !/^\d+$/.test(newest.from);
 
             const unreadCount = (isActiveChat || lastMsgIsOutgoing) ? 0 : contactMsgs.filter(m => {
@@ -180,6 +191,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             });
         });
 
+        // Sort by last message time — contacts with no messages sink to the bottom
         const sortedContacts = Array.from(contactMap.values()).sort(
             (a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
         );
