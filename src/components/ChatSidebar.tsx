@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, User, Tag as TagIcon, Bell, BellRing, MessageSquare, CheckCheck } from 'lucide-react';
+import { Search, User, Tag as TagIcon, Bell, BellRing, MessageSquare, CheckCheck, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { WhatsAppMessage, ContactEbp, Tag, getContactId } from '../types';
 import { TagManager } from './TagManager';
+import { BroadcastModal } from './BroadcastModal';
 import { subscribeToPush, isPushSupported } from '../lib/pushNotifications';
 import { PullToRefresh } from './PullToRefresh';
 import { useConfig } from '../context/ConfigContext';
@@ -90,6 +91,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
     const [tagManagerOpen, setTagManagerOpen] = useState(false);
     const [tagManagerContactId, setTagManagerContactId] = useState<string | undefined>();
     const [tagManagerContactTags, setTagManagerContactTags] = useState<number[]>([]);
+    const [broadcastOpen, setBroadcastOpen] = useState(false);
 
     // Fetch tags
     const fetchTags = useCallback(async () => {
@@ -182,8 +184,6 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         }
 
         const rows = (rpcResult.data ?? []) as WhatsAppMessage[];
-        console.log('[Sidebar] RPC rows:', rows.length, '| ebp contacts:', ebpMap.size, '| recent msgs:', recentResult.data?.length ?? 0);
-
         setContacts(buildContacts(rows, ebpMap, recentByContact));
         setHasMore(rows.length === CONTACTS_PAGE_SIZE);
         setContactPage(0);
@@ -422,6 +422,13 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setBroadcastOpen(true)}
+                            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-[var(--color-primary)] transition-colors"
+                            title="Broadcast to 24h window"
+                        >
+                            <Zap size={16} />
+                        </button>
                         <button
                             onClick={async () => {
                                 if (!isPushSupported()) {
@@ -675,6 +682,12 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                 onTagsChanged={handleTagsChanged}
                 contactId={tagManagerContactId}
                 contactTags={tagManagerContactTags}
+            />
+
+            {/* Broadcast Modal */}
+            <BroadcastModal
+                isOpen={broadcastOpen}
+                onClose={() => setBroadcastOpen(false)}
             />
         </>
     );

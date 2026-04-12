@@ -3,6 +3,7 @@ import { Send, Mic, Paperclip, X, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { WhatsAppMessage } from '../types';
 import { useConfig } from '../context/ConfigContext';
+import { generateRandomId, postToWebhook, sendWhatsAppText, storeMessage } from '../lib/whatsapp';
 
 interface OutboundHubProps {
     recipientId: string | null;
@@ -10,61 +11,8 @@ interface OutboundHubProps {
     addOptimisticMessage: (message: Partial<WhatsAppMessage>) => void;
 }
 
-// ... existing constants and helper functions (generateRandomId, postToWebhook, sendWhatsAppText, etc.) ...
-// NOTE: I am keeping the unchanged helper functions to save context, but in a real replace I would need to be careful not to delete them if I replaced the whole file. 
-// Since I am replacing the top part, I need to ensure I don't cut off helpers if I don't include them in replacement.
-// Actually, looking at the instruction, I should probably use `multi_replace` or be very careful.
-// Let's look at the file again. The prompt says "Add addOptimisticMessage prop".
-// I will replace the component definition and the `handleSend` function.
-
-// ... (KEEPING CONSTANTS SAME) ...
-// match lines 1-150 roughly
-
-
 // Supabase Storage (infrastructure-level, not app config)
 const SUPABASE_STORAGE_URL = 'https://whmbrguzumyatnslzfsq.supabase.co/storage/v1/object/public/TREE';
-
-// Generate random ID (1 to 1 billion)
-const generateRandomId = () => Math.floor(Math.random() * 1000000000) + 1;
-
-// POST to webhook
-const postToWebhook = async (mid: string, data: string, type: string, to: string, webhookUrl: string) => {
-    try {
-        const payload = { mid, data, type, id: generateRandomId(), to };
-        console.log('Posting to webhook:', payload);
-        await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            mode: 'no-cors'
-        });
-    } catch (err) {
-        console.error('Webhook error:', err);
-    }
-};
-
-// Send text via WhatsApp API
-const sendWhatsAppText = async (to: string, text: string, apiUrl: string, token: string) => {
-    const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            messaging_product: 'whatsapp',
-            recipient_type: 'individual',
-            to,
-            type: 'text',
-            text: { preview_url: false, body: text },
-        }),
-    });
-    if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'Failed to send');
-    }
-    return response.json();
-};
 
 // Send image via WhatsApp API
 const sendWhatsAppImage = async (to: string, imageUrl: string, apiUrl: string, token: string, caption?: string) => {
@@ -122,38 +70,6 @@ const uploadToStorage = async (file: File | Blob, fileName: string): Promise<str
     return `${SUPABASE_STORAGE_URL}/${data.path}`;
 };
 
-// Store message in database - with 'to' field
-const storeMessage = async (
-    type: string,
-    text: string | null,
-    mediaUrl: string | null,
-    mid: string,
-    toNumber: string,
-    tableMessages: string
-) => {
-    const insertData = {
-        type,
-        text,
-        media_url: mediaUrl,
-        from: null, // null = sent from our account
-        to: toNumber,
-        is_reply: 'false',
-        mid,
-        created_at: new Date().toISOString(),
-    };
-
-    console.log('Storing message:', insertData);
-
-    const { data, error } = await supabase.from(tableMessages).insert(insertData).select();
-
-    if (error) {
-        console.error('DB store failed:', error);
-        throw new Error(`DB error: ${error.message}`);
-    }
-
-    console.log('Message stored:', data);
-    return data?.[0];
-};
 
 export const OutboundHub = ({ recipientId, onMessageSent, addOptimisticMessage }: OutboundHubProps) => {
     const { config } = useConfig();
