@@ -253,11 +253,11 @@ export const BroadcastModal = ({ isOpen, onClose }: BroadcastModalProps) => {
             <div
                 className={[
                     // Layout & shape
-                    'bg-white w-full flex flex-col overflow-hidden',
-                    // Mobile: bottom sheet; desktop: centered card
-                    'rounded-t-[28px] md:rounded-2xl',
+                    'bg-white flex flex-col overflow-hidden',
+                    // Mobile: floating sheet with margins; desktop: centered card
+                    'mx-3 md:mx-0 rounded-[24px] md:rounded-2xl',
                     // Width constraints
-                    'md:max-w-[500px] md:mx-4',
+                    'w-auto md:w-full md:max-w-[420px]',
                     // Height — dvh collapses with keyboard on modern browsers
                     'max-h-[92dvh] md:max-h-[85dvh]',
                     // Elevation
