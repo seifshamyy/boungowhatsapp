@@ -241,7 +241,7 @@ export const BroadcastModal = ({ isOpen, onClose }: BroadcastModalProps) => {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center px-3 pb-3 md:p-0"
             style={{
                 backgroundColor: visible ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)',
                 backdropFilter: visible ? 'blur(3px)' : 'none',
@@ -252,12 +252,12 @@ export const BroadcastModal = ({ isOpen, onClose }: BroadcastModalProps) => {
         >
             <div
                 className={[
-                    // Layout & shape
-                    'bg-white flex flex-col overflow-hidden',
-                    // Mobile: floating sheet with margins; desktop: centered card
-                    'mx-3 md:mx-0 rounded-[24px] md:rounded-2xl',
-                    // Width constraints
-                    'w-auto md:w-full md:max-w-[420px]',
+                    // Layout & shape — card fills padded backdrop width
+                    'bg-white w-full flex flex-col overflow-hidden',
+                    // Rounded all corners on mobile (floating), only standard on desktop
+                    'rounded-2xl md:rounded-2xl',
+                    // Desktop width cap
+                    'md:max-w-[420px]',
                     // Height — dvh collapses with keyboard on modern browsers
                     'max-h-[92dvh] md:max-h-[85dvh]',
                     // Elevation
