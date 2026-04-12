@@ -241,7 +241,7 @@ export const BroadcastModal = ({ isOpen, onClose }: BroadcastModalProps) => {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end md:items-center justify-center px-3 pb-3 md:p-0"
+            className="fixed inset-0 z-50"
             style={{
                 backgroundColor: visible ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)',
                 backdropFilter: visible ? 'blur(3px)' : 'none',
@@ -250,13 +250,12 @@ export const BroadcastModal = ({ isOpen, onClose }: BroadcastModalProps) => {
             }}
             onClick={isSending ? undefined : onClose}
         >
+            {/* Positioning shell — mobile: pinned to bottom with explicit gutters; desktop: centered */}
+            <div className="absolute bottom-3 left-3 right-3 md:inset-0 md:flex md:items-center md:justify-center md:p-4">
             <div
                 className={[
-                    // Layout & shape — card fills padded backdrop width
                     'bg-white w-full flex flex-col overflow-hidden',
-                    // Rounded all corners on mobile (floating), only standard on desktop
-                    'rounded-2xl md:rounded-2xl',
-                    // Desktop width cap
+                    'rounded-2xl',
                     'md:max-w-[420px]',
                     // Height — dvh collapses with keyboard on modern browsers
                     'max-h-[92dvh] md:max-h-[85dvh]',
@@ -680,6 +679,7 @@ export const BroadcastModal = ({ isOpen, onClose }: BroadcastModalProps) => {
                         </div>
                     </>
                 )}
+            </div>
             </div>
         </div>
     );
