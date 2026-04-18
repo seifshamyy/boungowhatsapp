@@ -361,29 +361,141 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
     }, []);
 
     const [selectedTagFilter, setSelectedTagFilter] = useState<number | null>(null);
+    const [searchResults, setSearchResults] = useState<SidebarContact[] | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // Server-side search across the full contacts + messages tables.
+    // Fires whenever searchQuery or selectedTagFilter changes (debounced 300ms).
+    // When both are empty the results are cleared and the normal paginated
+    // contacts list is shown instead.
+    useEffect(() => {
+        if (!searchQuery && !selectedTagFilter) {
+            setSearchResults(null);
+            return;
+        }
+
+        const controller = new AbortController();
+
+        const doSearch = async () => {
+            setIsSearching(true);
+
+            // 1. Find matching contacts (by name and/or tag filter)
+            let contactsQuery = supabase.from(config.tableContacts).select('*');
+            if (selectedTagFilter) {
+                contactsQuery = contactsQuery.contains('tags', [selectedTagFilter]);
+            }
+            if (searchQuery) {
+                contactsQuery = contactsQuery.ilike('name_WA', `%${searchQuery}%`);
+            }
+            const { data: matchedByName } = await contactsQuery;
+            if (controller.signal.aborted) return;
+
+            // 2. If query looks like a phone number fragment, also search messages table
+            let phoneContactIds = new Set<string>();
+            if (searchQuery && /\d/.test(searchQuery)) {
+                const { data: phoneMsgs } = await supabase
+                    .from(config.tableMessages)
+                    .select('from, to, text, type, created_at')
+                    .or(`from.ilike.%${searchQuery}%,to.ilike.%${searchQuery}%`)
+                    .order('created_at', { ascending: false })
+                    .limit(200);
+                if (!controller.signal.aborted && phoneMsgs) {
+                    (phoneMsgs as WhatsAppMessage[]).forEach(msg => {
+                        const cid = getContactId(msg);
+                        if (cid) phoneContactIds.add(cid);
+                    });
+                }
+            }
+            if (controller.signal.aborted) return;
+
+            // 3. Merge contact ID sets
+            const nameContactIds = new Set((matchedByName ?? []).map(c => String(c.id)));
+            const allMatchIds = new Set([...nameContactIds, ...phoneContactIds]);
+            if (allMatchIds.size === 0) { setSearchResults([]); setIsSearching(false); return; }
+
+            // 4. Fetch full contact rows for phone-only matches (not already in matchedByName)
+            const extraIds = [...phoneContactIds].filter(id => !nameContactIds.has(id)).map(Number);
+            let allContacts = [...(matchedByName ?? [])] as ContactEbp[];
+            if (extraIds.length > 0) {
+                const { data: extraContacts } = await supabase
+                    .from(config.tableContacts)
+                    .select('*')
+                    .in('id', extraIds);
+                if (!controller.signal.aborted && extraContacts) {
+                    allContacts = [...allContacts, ...(extraContacts as ContactEbp[])];
+                }
+            }
+            if (controller.signal.aborted) return;
+
+            // Apply tag filter to phone-matched extras (name matches already filtered server-side)
+            if (selectedTagFilter) {
+                allContacts = allContacts.filter(c => {
+                    const tags = (c.tags as number[]) || [];
+                    return tags.includes(selectedTagFilter);
+                });
+            }
+
+            // 5. Get last message for each matched contact
+            const numericIds = [...new Set(allContacts.map(c => Number(c.id)))];
+            const { data: recentMsgs } = await supabase
+                .from(config.tableMessages)
+                .select('id, from, to, text, type, created_at')
+                .order('created_at', { ascending: false })
+                .limit(Math.min(numericIds.length * 20, 5000));
+            if (controller.signal.aborted) return;
+
+            const lastMsgByContact = new Map<string, WhatsAppMessage>();
+            ((recentMsgs ?? []) as WhatsAppMessage[]).forEach(msg => {
+                const cid = getContactId(msg);
+                if (cid && numericIds.includes(Number(cid)) && !lastMsgByContact.has(cid)) {
+                    lastMsgByContact.set(cid, msg);
+                }
+            });
+
+            // 6. Build SidebarContact results
+            const results: SidebarContact[] = allContacts.map(contact => {
+                const contactId = String(contact.id);
+                const lastMsg = lastMsgByContact.get(contactId);
+                const lastMsgIsOutgoing = lastMsg ? (!lastMsg.from || !/^\d+$/.test(lastMsg.from)) : true;
+                return {
+                    id: contactId,
+                    name: contact.name_WA || null,
+                    lastMessage: lastMsg?.text || (lastMsg?.type === 'audio' ? '🎤 Voice message' : lastMsg ? '📷 Media' : ''),
+                    lastMessageTime: lastMsg?.created_at || '',
+                    lastMessageIsOutgoing: lastMsgIsOutgoing,
+                    unreadCount: 0,
+                    tags: (contact.tags as number[]) || [],
+                    aiEnabled: contact.AI_replies === 'true',
+                } satisfies SidebarContact;
+            }).sort((a, b) => {
+                if (!a.lastMessageTime) return 1;
+                if (!b.lastMessageTime) return -1;
+                return new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime();
+            });
+
+            setSearchResults(results);
+            setIsSearching(false);
+        };
+
+        const timer = setTimeout(doSearch, 300);
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [searchQuery, selectedTagFilter, config.tableContacts, config.tableMessages]);
+
+    // Base list: use server-side search results when a filter is active,
+    // otherwise use the normally-loaded paginated contacts.
+    const isFilterActive = !!(searchQuery || selectedTagFilter);
+    const baseContacts = isFilterActive ? (searchResults ?? []) : contacts;
 
     // Count of chats with at least one unread message (not total message count)
     const totalUnreadChats = contacts.filter(c => c.unreadCount > 0).length;
 
-    const filteredContacts = contacts
+    const filteredContacts = baseContacts
         .filter((c) => {
-            const textMatch = !searchQuery || (
-                c.id.includes(searchQuery) ||
-                c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                c.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (c.tags && c.tags.some(tagId => {
-                    const tag = allTags.find(t => t.id === tagId);
-                    return tag?.['tag name']?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false;
-                }))
-            );
-            const tagMatch = !selectedTagFilter || (c.tags && c.tags.includes(selectedTagFilter));
             const unreadMatch = !showUnreadOnly || c.unreadCount > 0;
             const aiOffMatch = !showAiOffOnly || !c.aiEnabled;
-            return textMatch && tagMatch && unreadMatch && aiOffMatch;
+            return unreadMatch && aiOffMatch;
         })
         // Sort purely by last message time — same as native WhatsApp.
-        // Unread chats stay in their chronological position; only the visual
-        // treatment (badge, bold, tint, border) distinguishes them.
         .sort((a, b) => {
             return new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime();
         });
@@ -565,8 +677,8 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
                 {/* Contact List */}
                 <PullToRefresh onRefresh={fetchContacts} className="flex-1 min-h-0">
-                    {loading ? (
-                        <div className="text-center text-xs py-6 animate-pulse" style={{ color: 'var(--color-accent)' }}>Scanning...</div>
+                    {loading || isSearching ? (
+                        <div className="text-center text-xs py-6 animate-pulse" style={{ color: 'var(--color-accent)' }}>{isSearching ? 'Searching...' : 'Scanning...'}</div>
                     ) : filteredContacts.length === 0 ? (
                         <div className="text-center text-slate-400 text-xs py-10 px-4">
                             No conversations match your search
