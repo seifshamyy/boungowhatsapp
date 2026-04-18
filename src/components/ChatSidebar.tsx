@@ -152,7 +152,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
     }, []);
 
     const fetchContacts = useCallback(async () => {
-        const [rpcResult, recentResult, ebpResult] = await Promise.all([
+        const [rpcResult, recentResult] = await Promise.all([
             supabase.rpc('get_last_messages_per_contact', {
                 p_table: config.tableMessages,
                 page_limit: CONTACTS_PAGE_SIZE,
@@ -163,8 +163,17 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
                 .select('id, from, to, text, type, created_at')
                 .order('created_at', { ascending: false })
                 .range(0, RECENT_MSGS_SIZE - 1),
-            supabase.from(config.tableContacts).select('*'),
         ]);
+
+        const rows = (rpcResult.data ?? []) as WhatsAppMessage[];
+        const contactIds = rows
+            .map(msg => getContactId(msg))
+            .filter((id): id is string => id !== null)
+            .map(id => Number(id));
+
+        const ebpResult = contactIds.length > 0
+            ? await supabase.from(config.tableContacts).select('*').in('id', contactIds)
+            : { data: [], error: null };
 
         const ebpMap = new Map<string, ContactEbp>();
         if (ebpResult.data) {
@@ -184,7 +193,6 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
             console.error('[Sidebar] RPC error:', rpcResult.error);
         }
 
-        const rows = (rpcResult.data ?? []) as WhatsAppMessage[];
         setContacts(buildContacts(rows, ebpMap, recentByContact));
         setHasMore(rows.length === CONTACTS_PAGE_SIZE);
         setContactPage(0);
@@ -195,21 +203,26 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
         setLoadingMore(true);
         const nextPage = contactPage + 1;
 
-        const [rpcResult, ebpResult] = await Promise.all([
-            supabase.rpc('get_last_messages_per_contact', {
-                p_table: config.tableMessages,
-                page_limit: CONTACTS_PAGE_SIZE,
-                page_offset: nextPage * CONTACTS_PAGE_SIZE,
-            }),
-            supabase.from(config.tableContacts).select('*'),
-        ]);
+        const rpcResult = await supabase.rpc('get_last_messages_per_contact', {
+            p_table: config.tableMessages,
+            page_limit: CONTACTS_PAGE_SIZE,
+            page_offset: nextPage * CONTACTS_PAGE_SIZE,
+        });
+
+        const rows = (rpcResult.data ?? []) as WhatsAppMessage[];
+        const contactIds = rows
+            .map(msg => getContactId(msg))
+            .filter((id): id is string => id !== null)
+            .map(id => Number(id));
+
+        const ebpResult = contactIds.length > 0
+            ? await supabase.from(config.tableContacts).select('*').in('id', contactIds)
+            : { data: [], error: null };
 
         const ebpMap = new Map<string, ContactEbp>();
         if (ebpResult.data) {
             (ebpResult.data as ContactEbp[]).forEach(c => ebpMap.set(String(c.id), c));
         }
-
-        const rows = (rpcResult.data ?? []) as WhatsAppMessage[];
         // No need for unread counts on older contacts — they're not active
         const newContacts = buildContacts(rows, ebpMap, new Map());
         setContacts(prev => [...prev, ...newContacts]);
@@ -403,7 +416,7 @@ export const ChatSidebar = ({ onSelectChat, selectedChat }: ChatSidebarProps) =>
 
     const handleTagsChanged = () => {
         fetchTags();
-        fetchContactsEbp();
+        fetchContacts();
     };
 
     return (
