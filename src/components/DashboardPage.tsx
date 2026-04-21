@@ -123,13 +123,15 @@ function DateList({ rows, onSelect, onClose }: { rows: DailyAnalytics[]; onSelec
 // ─── Message Depth Bars ───────────────────────────────────────────────────────
 function DepthBars({ counts }: { counts: Record<string, number> }) {
     const ORDER = ['1-2', '3-5', '6-7', '8-10', '11+'];
-    const total = Object.values(counts).reduce((s, v) => s + v, 0) || 1;
-    const maxVal = Math.max(...Object.values(counts), 1);
+    // Coerce to Number — jsonb values sometimes arrive as strings from Supabase
+    const numCounts = Object.fromEntries(Object.entries(counts).map(([k, v]) => [k, Number(v) || 0]));
+    const total = Object.values(numCounts).reduce((s, v) => s + v, 0) || 1;
+    const maxVal = Math.max(...Object.values(numCounts), 1);
 
     return (
         <div className="space-y-2.5">
             {ORDER.map(key => {
-                const val = counts[key] ?? 0;
+                const val = numCounts[key] ?? 0;
                 const pct = (val / maxVal) * 100;
                 return (
                     <div key={key} className="flex items-center gap-3">
@@ -213,9 +215,18 @@ function AdCard({ ad, rank }: { ad: TopAd; rank: number }) {
     );
 }
 
+// Safe-parse a field that may arrive as a JSON string or already-parsed object
+function safeParse<T>(val: unknown): T | null {
+    if (!val) return null;
+    if (typeof val === 'string') { try { return JSON.parse(val) as T; } catch { return null; } }
+    return val as T;
+}
+
 // ─── Day Detail ───────────────────────────────────────────────────────────────
 function DayDetail({ row, onBack }: { row: DailyAnalytics; onBack: () => void }) {
-    const ads = row.top_ads?.data ?? [];
+    const topAds = safeParse<{ data: TopAd[] }>(row.top_ads);
+    const ads = topAds?.data ?? [];
+    const messageCounts = safeParse<Record<string, number>>(row.message_count);
 
     return (
         <>
@@ -259,12 +270,12 @@ function DayDetail({ row, onBack }: { row: DailyAnalytics; onBack: () => void })
                 </div>
 
                 {/* Message depth distribution */}
-                {row.message_count && Object.keys(row.message_count).length > 0 && (
+                {messageCounts && Object.keys(messageCounts).length > 0 && (
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
                         <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
                             Conversation Depth
                         </p>
-                        <DepthBars counts={row.message_count} />
+                        <DepthBars counts={messageCounts} />
                     </div>
                 )}
 
