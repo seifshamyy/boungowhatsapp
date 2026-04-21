@@ -8,6 +8,11 @@ interface TopAd {
     trigger_count: string;
 }
 
+interface HourlyEntry {
+    hour: string;        // UTC ISO string
+    new_contacts: string; // numeric string
+}
+
 interface DailyAnalytics {
     id: number;
     analysis_date: string;
@@ -16,6 +21,7 @@ interface DailyAnalytics {
     top_ads: { data: TopAd[] } | null;
     message_trend_analysis: string | null;
     message_count: Record<string, number> | null;
+    messages_by_hour: unknown;
     created_at: string;
 }
 
@@ -215,6 +221,112 @@ function AdCard({ ad, rank }: { ad: TopAd; rank: number }) {
     );
 }
 
+// ─── Hourly Curve Chart ───────────────────────────────────────────────────────
+function HourlyChart({ raw }: { raw: unknown }) {
+    // Column arrives as: [{ data: [{ hour, new_contacts }] }]
+    const outer = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : raw;
+    const entries: HourlyEntry[] = (Array.isArray(outer) ? outer[0]?.data : outer?.data) ?? [];
+    if (entries.length === 0) return null;
+
+    // Keep chronological (UTC) order; label each point in UTC+2
+    const pts = entries.map((e, i) => {
+        const d = new Date(e.hour);
+        const h2 = (d.getUTCHours() + 2) % 24;
+        return { i, h2, count: Number(e.new_contacts) || 0, label: `${String(h2).padStart(2, '0')}:00` };
+    });
+
+    const maxVal = Math.max(...pts.map(p => p.count), 1);
+    const peakPt = pts.reduce((m, p) => (p.count > m.count ? p : m), pts[0]);
+
+    // SVG layout
+    const VW = 360, VH = 130;
+    const pL = 26, pR = 8, pT = 18, pB = 26;
+    const cW = VW - pL - pR, cH = VH - pT - pB;
+    const toX = (i: number) => pL + (i / Math.max(pts.length - 1, 1)) * cW;
+    const toY = (v: number) => pT + cH - (v / maxVal) * cH;
+
+    // Smooth cubic bezier path
+    const line = pts.reduce((d, p, i) => {
+        const x = toX(i), y = toY(p.count);
+        if (i === 0) return `M ${x} ${y}`;
+        const px = toX(i - 1), py = toY(pts[i - 1].count);
+        const cx = (px + x) / 2;
+        return `${d} C ${cx} ${py}, ${cx} ${y}, ${x} ${y}`;
+    }, '');
+    const lastX = toX(pts.length - 1), baseY = pT + cH;
+    const area = `${line} L ${lastX} ${baseY} L ${toX(0)} ${baseY} Z`;
+
+    // X-axis labels — show ~5 evenly spaced, always include first & last
+    const step = Math.max(1, Math.floor((pts.length - 1) / 5));
+    const labelIdxs = new Set([0, ...pts.map((_, i) => i).filter(i => i % step === 0), pts.length - 1]);
+
+    // Y grid
+    const yGridPcts = [0.25, 0.5, 0.75, 1];
+
+    return (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                Leads by Hour · UTC+2
+            </p>
+            <svg viewBox={`0 0 ${VW} ${VH}`} className="w-full" style={{ height: 130, display: 'block' }}>
+                <defs>
+                    <linearGradient id="hGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.28" />
+                        <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.02" />
+                    </linearGradient>
+                </defs>
+
+                {/* Horizontal grid lines + Y labels */}
+                {yGridPcts.map(pct => {
+                    const y = pT + cH - pct * cH;
+                    return (
+                        <g key={pct}>
+                            <line x1={pL} y1={y} x2={VW - pR} y2={y} stroke="#f1f5f9" strokeWidth="1" />
+                            <text x={pL - 3} y={y + 3} textAnchor="end" fill="#cbd5e1" fontSize="7">
+                                {Math.round(pct * maxVal)}
+                            </text>
+                        </g>
+                    );
+                })}
+
+                {/* X baseline */}
+                <line x1={pL} y1={baseY} x2={VW - pR} y2={baseY} stroke="#e2e8f0" strokeWidth="1" />
+
+                {/* Area fill */}
+                <path d={area} fill="url(#hGrad)" />
+
+                {/* Curve */}
+                <path d={line} fill="none" stroke="var(--color-accent)" strokeWidth="2"
+                    strokeLinecap="round" strokeLinejoin="round" />
+
+                {/* All data dots (tiny) */}
+                {pts.map(p => (
+                    <circle key={p.i} cx={toX(p.i)} cy={toY(p.count)} r="2"
+                        fill="var(--color-accent)" opacity="0.5" />
+                ))}
+
+                {/* Peak highlight */}
+                <circle cx={toX(peakPt.i)} cy={toY(peakPt.count)} r="4.5"
+                    fill="var(--color-accent)" />
+                <circle cx={toX(peakPt.i)} cy={toY(peakPt.count)} r="7"
+                    fill="var(--color-accent)" opacity="0.15" />
+                <text x={toX(peakPt.i)} y={toY(peakPt.count) - 9}
+                    textAnchor="middle" fill="var(--color-accent)" fontSize="8.5" fontWeight="bold">
+                    {peakPt.count}
+                </text>
+
+                {/* X-axis labels */}
+                {pts.filter((_, i) => labelIdxs.has(i)).map(p => (
+                    <text key={p.i} x={toX(p.i)} y={VH - 2}
+                        textAnchor="middle" fill="#94a3b8" fontSize="7">
+                        {p.label}
+                    </text>
+                ))}
+            </svg>
+        </div>
+    );
+}
+
 // Safe-parse a field that may arrive as a JSON string or already-parsed object
 function safeParse<T>(val: unknown): T | null {
     if (!val) return null;
@@ -268,6 +380,9 @@ function DayDetail({ row, onBack }: { row: DailyAnalytics; onBack: () => void })
                         </div>
                     </div>
                 </div>
+
+                {/* Hourly curve */}
+                <HourlyChart raw={row.messages_by_hour} />
 
                 {/* Message depth distribution */}
                 {messageCounts && Object.keys(messageCounts).length > 0 && (
