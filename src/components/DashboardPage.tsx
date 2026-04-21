@@ -222,10 +222,26 @@ function AdCard({ ad, rank }: { ad: TopAd; rank: number }) {
 }
 
 // ─── Hourly Curve Chart ───────────────────────────────────────────────────────
+function parseHourly(raw: unknown): HourlyEntry[] {
+    // Unwrap up to 3 levels of JSON-string encoding
+    let val: unknown = raw;
+    for (let i = 0; i < 3; i++) {
+        if (typeof val !== 'string') break;
+        try { val = JSON.parse(val); } catch { break; }
+    }
+    // Try every reasonable shape:
+    // 1. [{data:[...]}]  ← what the user described
+    if (Array.isArray(val) && val[0]?.data) return val[0].data as HourlyEntry[];
+    // 2. {data:[...]}
+    if (val && typeof val === 'object' && !Array.isArray(val) && (val as any).data)
+        return (val as any).data as HourlyEntry[];
+    // 3. [{hour, new_contacts}]  ← data array directly
+    if (Array.isArray(val) && val[0]?.hour) return val as HourlyEntry[];
+    return [];
+}
+
 function HourlyChart({ raw }: { raw: unknown }) {
-    // Column arrives as: [{ data: [{ hour, new_contacts }] }]
-    const outer = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : raw;
-    const entries: HourlyEntry[] = (Array.isArray(outer) ? outer[0]?.data : outer?.data) ?? [];
+    const entries = parseHourly(raw);
     if (entries.length === 0) return null;
 
     // Keep chronological (UTC) order; label each point in UTC+2
